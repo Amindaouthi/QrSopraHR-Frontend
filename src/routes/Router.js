@@ -12,7 +12,7 @@ import AjouterModerateur from 'src/views/sample-page/AjouterModerateur';
 import UserProfile from 'src/views/client/UserProfile';
 import Customers from 'src/views/client/Customers';
 import QuestionOnTags from 'src/views/client/homeComponents/QuestionOnTags';
-import ChartComponent from 'src/views/client/homeComponents/Myquestions';
+import ChartComponent from 'src/views/client/homeComponents/ChartComponent';
 import AnswersPage from 'src/views/client/homeComponents/Mesanswers';
 import MesQuestions from 'src/views/client/homeComponents/Mesquestions';
 import MesQuestionsFavorites from 'src/views/client/MesQuestionsFavorits';
@@ -56,6 +56,7 @@ const Router = [
       { path: '/listQuestions', exact: true, element: <ListQuestions /> },
       { path: '/stat', exact: true, element: <Stat /> },
       
+      
 
 
       { path: '*', element: <Navigate to="/auth/404" /> },
@@ -92,6 +93,7 @@ const Router = [
       { path: '/client/MesQuestionsFavorits', element: <MesQuestionsFavorites /> },
       { path: '/client/user', element: <ChartComponent /> },
       { path: '/client/chatbox', element: <ChatBox /> },
+      {path: '/client/YearlyBreakup' ,element : <YearlyBreakup />}
     ],
   },
 ];

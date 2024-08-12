@@ -6,9 +6,11 @@ import Chart from 'react-apexcharts';
 import axios from 'axios';
 
 const Stat = () => {
-    const [month, setMonth] = useState(new Date().getMonth() + 1); // Default to current month
+    const [month, setMonth] = useState(''); // Default to show all year
     const [questionsData, setQuestionsData] = useState(Array(12).fill(0));
     const [answersData, setAnswersData] = useState(Array(12).fill(0));
+    const [filteredQuestionsData, setFilteredQuestionsData] = useState(Array(12).fill(0));
+    const [filteredAnswersData, setFilteredAnswersData] = useState(Array(12).fill(0));
 
     const theme = useTheme();
     const primary = theme.palette.primary.main;
@@ -19,8 +21,9 @@ const Stat = () => {
         axios.get('http://localhost:8080/api/questions')
             .then(response => {
                 const data = response.data;
+                console.log(data)
 
-                // Initialize arrays for 12 months
+                
                 const questionsCounts = Array(12).fill(0);
                 const answersCounts = Array(12).fill(0);
 
@@ -36,9 +39,36 @@ const Stat = () => {
 
                 setQuestionsData(questionsCounts);
                 setAnswersData(answersCounts);
+                updateFilteredData(''); // Default to show all year
             })
             .catch(error => console.error('Error fetching data:', error));
     }, []);
+
+    const updateFilteredData = (selectedMonth) => {
+        const newQuestionsData = Array(12).fill(0);
+        const newAnswersData = Array(12).fill(0);
+
+        if (selectedMonth === '') {
+            // Display data for the entire year
+            for (let i = 0; i < 12; i++) {
+                newQuestionsData[i] = questionsData[i];
+                newAnswersData[i] = answersData[i];
+            }
+        } else {
+            // Filter data based on the selected month
+            const monthIndex = selectedMonth - 1; // Convert to 0-based index
+            newQuestionsData[monthIndex] = questionsData[monthIndex];
+            newAnswersData[monthIndex] = answersData[monthIndex];
+        }
+
+        setFilteredQuestionsData(newQuestionsData);
+        setFilteredAnswersData(newAnswersData);
+    };
+
+    useEffect(() => {
+        // Update the filtered data whenever the month or raw data changes
+        updateFilteredData(month);
+    }, [month, questionsData, answersData]);
 
     const handleChange = (event) => {
         setMonth(event.target.value);
@@ -115,11 +145,11 @@ const Stat = () => {
     const seriescolumnchart = [
         {
             name: 'Questions',
-            data: questionsData,
+            data: filteredQuestionsData,
         },
         {
             name: 'Answers',
-            data: answersData,
+            data: filteredAnswersData,
         },
     ];
 
@@ -132,6 +162,9 @@ const Stat = () => {
                 size="small"
                 onChange={handleChange}
             >
+                <MenuItem value="">
+                    Toute l'année
+                </MenuItem>
                 {monthNames.map((name, index) => (
                     <MenuItem
                         key={index}

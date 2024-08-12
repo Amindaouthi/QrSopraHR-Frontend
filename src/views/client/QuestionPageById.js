@@ -47,11 +47,11 @@ const GlobalStyle = createGlobalStyle`
       border-radius: 4px;
   }
 `;
- 
+
 const Container = styled.div`
   padding: 30px 20px;
 `;
- 
+
 const Cader = styled.div`
   background: #f9f9f9;
   padding: 15px;
@@ -65,19 +65,19 @@ const Comment = styled.div`
   border-radius: 5px;
   margin-bottom: 5px;
 `;
- 
+
 const Separator = styled.hr`
   border: none;
   border-top: 1px solid #000000;
   margin: 30px 0;
 `;
- 
+
 const EditDeleteIcons = styled.div`
   display: flex;
   justify-content: flex-end;
   margin-top: -20px;
 `;
- 
+
 const Icon = styled.div`
   margin-left: 10px;
   cursor: pointer;
@@ -98,7 +98,7 @@ const CorrectAnswerLabel = styled.div`
   color: green;
   font-size: 16px;
   margin-top: 10px;
- 
+
   svg {
     margin-right: 5px;
     color: green;
@@ -113,7 +113,7 @@ const CheckmarkIcon = styled(IoIosCheckmarkCircleOutline)`
 function QuestionsPageById() {
   const [question, setQuestion] = useState(null);
   const [answer, setAnswer] = useState('');
-  const [answers,setAnswers] =useState();
+  const [answers, setAnswers] = useState();
   const { questionId } = useParams();
   const [file, setFile] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
@@ -121,45 +121,45 @@ function QuestionsPageById() {
   const [totalVote, setTotalVote] = useState(null);
   const [voteValue1, setVoteValue1] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
- 
+
   const token = localStorage.getItem('token');
- 
+
   const userObject = JSON.parse(localStorage.getItem('user'));
   const userId = userObject ? userObject.id : null;
- 
+
   library.add(faUser, faCalendar);
- 
+
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     setFile(selectedFile);
- 
+
     // Create a URL for preview
     if (selectedFile) {
       const fileURL = URL.createObjectURL(selectedFile);
       setFilePreview(fileURL);
     }
   };
- 
+
   const handleSubmit = async (event) => {
     event.preventDefault();
- 
+
     try {
       const token = localStorage.getItem('token');
       const formData = new FormData();
       formData.append('answerRequest.content', answer);
       console.log(answer);
- 
+
       if (file) {
         formData.append('file', file);
       }
       formData.forEach((value, key) => {
         console.log(key, value);
       });
- 
+
       await axios.post(
         `http://localhost:8080/api/questions/${questionId}/answers`,
         formData,
- 
+
         {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -167,7 +167,7 @@ function QuestionsPageById() {
           },
         },
       );
- 
+
       setAnswer('');
       setFile(null);
       setFilePreview(null);
@@ -176,7 +176,7 @@ function QuestionsPageById() {
       console.error('Error posting answer:', error.message);
     }
   };
- 
+
   const handleAddLink = () => {
     const link = prompt('Enter the link URL:');
     if (link) {
@@ -189,7 +189,7 @@ function QuestionsPageById() {
       setAnswer((prevAnswer) => `${prevAnswer} \n[File: ${file.name}]`);
     }
   };
- 
+
   const fetchQuestionById = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -200,46 +200,39 @@ function QuestionsPageById() {
       });
       setQuestion(response.data);
       console.log(response.data);
- 
-     
     } catch (error) {
       console.error('Error fetching question data:', error.message);
     }
   };
- 
+
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [fullScreenSrc, setFullScreenSrc] = useState('');
- 
+
   const handleImageClick = (src) => {
     setFullScreenSrc(src);
     setIsFullScreen(true);
   };
- 
+
   const closeFullScreen = () => {
     setIsFullScreen(false);
     setFullScreenSrc('');
   };
- 
+
   const fetchVote = async () => {
     const entityType = 'Question';
     const entityId = questionId;
-    axios
-      .get(`http://localhost:8080/api/votes/status`, {
-        params: {
-          entityType,
-          entityId,
-          userId,
-        },
-      })
-      .then((response) => {
-        setVoteValue(response.data.value);
-        setTotalVote(response.data.totalVotes);
-        console.log(response.data);
-      })
-      .catch((error) => {
-        console.error('There was an error fetching the vote status!', error);
+    try {
+      const response = await axios.get('http://localhost:8080/api/votes/status', {
+        params: { entityType, entityId, userId },
       });
+      setVoteValue(response.data.value);
+      setTotalVote(response.data.totalVotes);
+      console.log(response.data);
+    } catch (error) {
+      console.error('There was an error fetching the vote status!', error);
+    }
   };
+
   useEffect(() => {
     const incrementView = async () => {
       try {
@@ -249,24 +242,24 @@ function QuestionsPageById() {
         console.error('Error incrementing view count:', error);
       }
     };
- 
+
     incrementView();
     fetchVote();
     fetchQuestionById();
   }, [questionId]);
- 
+
   const [replyToId, setReplyToId] = useState(null);
   const [replyContent, setReplyContent] = useState('');
   const replyFormRef = useRef(null);
   const [imagePreview, setImagePreview] = useState(null);
- 
+
   const handleReplyClick2 = (answerId) => {
     setReplyToId(answerId);
   };
- 
+
   const handleReplySubmit2 = async (parentAnswerId, event) => {
     event.preventDefault();
- 
+
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -274,7 +267,7 @@ function QuestionsPageById() {
         console.error("Token d'authentification non disponible");
         return;
       }
- 
+
       const response = await axios.post(
         `http://localhost:8080/api/questions/${questionId}/answers/${parentAnswerId}/responses`,
         { content: replyContent },
@@ -284,7 +277,7 @@ function QuestionsPageById() {
           },
         },
       );
- 
+
       console.log('Réponse postée avec succès:', response.data);
       setReplyContent('');
       window.location.reload();
@@ -292,81 +285,93 @@ function QuestionsPageById() {
       console.error('Erreur lors de la publication de la réponse:', error.message);
     }
   };
- 
-  const handleVote = (value) => {
-    axios
-      .post(`http://localhost:8080/api/votes/Question/${questionId}`, null, {
-        params: {
-          userId,
-          value,
+
+  const handleVote = async (value) => {
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/api/votes/Question/${questionId}`,
+        null,
+        {
+          params: { userId, value },
         },
-      })
-      .then((response) => {
-        console.log(response.data);
-        setVoteValue(value);
- 
-        alert(response.data);
-        window.location.reload(); // Update the vote value state
-      })
-      .catch((error) => {
-        console.error('There was an error!', error);
-      });
+      );
+      console.log(response.data);
+      setVoteValue(value);
+      fetchVote(); // Récupère les votes mis à jour
+    } catch (error) {
+      console.error('There was an error!', error);
+    }
   };
-  const handleVote1 = (value, id) => {
-    axios
-      .post(`http://localhost:8080/api/votes/Answer/${id}`, null, {
-        params: {
-          userId,
-          value,
-        },
-      })
-      .then((response) => {
-        console.log(response.data);
-        setVoteValue1(value);
- 
-        alert(response.data);
-        window.location.reload(); // Update the vote value state
-      })
-      .catch((error) => {
-        console.error('There was an error!', error);
+
+  const handleVote1 = async (value, id) => {
+    try {
+      const response = await axios.post(`http://localhost:8080/api/votes/Answer/${id}`, null, {
+        params: { userId, value },
       });
+      console.log(response.data);
+      setVoteValue1(value);
+      fetchVote(); // Récupère les votes mis à jour
+    } catch (error) {
+      console.error('There was an error!', error);
+    }
   };
+
   const handleClickOutside = (event) => {
     if (replyFormRef.current && !replyFormRef.current.contains(event.target)) {
       setReplyToId(null);
     }
   };
- 
+
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
- 
+
   useEffect(() => {
     const fetchAnswers = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/questions/${questionId}/answers`);
+        const response = await axios.get(
+          `http://localhost:8080/api/questions/${questionId}/answers`,
+        );
         setAnswers(response.data);
       } catch (error) {
         console.error('Error fetching answers:', error);
       }
     };
- 
+
     fetchAnswers();
   }, [questionId]);
- 
- 
+
   const handleAcceptAnswer = async (answerId) => {
-    const userId = localStorage.getItem('userId'); // Récupérer l'ID de l'utilisateur depuis le localStorage
-    const questionCreatorId = question.userId; // Assurez-vous d'avoir l'ID du créateur de la question
-  
+    const user = localStorage.getItem('user');
+
+    
+    if (user) {
+      
+      const parsedUser = JSON.parse(user);
+
+      
+      const userId = parsedUser.id;
+
+      
+      console.log('User ID:', userId);
+    } else {
+      console.log('No user found in localStorage.');
+    }
+    const questionCreatorId = question.userId;
+    console.log(questionCreatorId); // Assurez-vous d'avoir l'ID du créateur de la question
+
     if (userId !== questionCreatorId) {
-      Swal.fire('Sorry', 'Only the user who created the question can mark an answer as accepted', 'error');
+      Swal.fire(
+        'Sorry',
+        'Only the user who created the question can mark an answer as accepted',
+        'error',
+      );
       return;
     }
-  
+
     try {
       const response = await axios.put(
         `http://localhost:8080/api/questions/${answerId}/accept`,
@@ -375,23 +380,24 @@ function QuestionsPageById() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
-  
+
       if (response.status === 200) {
         Swal.fire('Answer marked as correct', '', 'success').then(() => {
           window.location.reload();
         });
         setAnswers((prevAnswers) =>
           prevAnswers.map((answer) =>
-            answer.id === answerId ? { ...answer, accepted: true } : { ...answer, accepted: false }
-          )
+            answer.id === answerId ? { ...answer, accepted: true } : { ...answer, accepted: false },
+          ),
         );
       }
     } catch (error) {
       console.error('Error accepting answer:', error);
     }
   };
+  
   return (
     <>
       <NewNavbar />
@@ -427,7 +433,7 @@ function QuestionsPageById() {
                                 height="400px"
                               />
                             )}
- 
+
                             {question.contentType === 'image/png' && (
                               <embed
                                 src={`data:image/png;base64,${question.file}`}
@@ -465,7 +471,7 @@ function QuestionsPageById() {
                             <img src={fullScreenSrc} alt="Full screen" />
                           </div>
                         )}
- 
+
                         <p className="blog-meta">
                           <span>
                             <FontAwesomeIcon
@@ -493,7 +499,10 @@ function QuestionsPageById() {
                             />
                           </span>
                           <span className="author">
-                            <FontAwesomeIcon icon="user" style={{ marginRight: '25px' ,marginLeft:"45px"}} />{' '}
+                            <FontAwesomeIcon
+                              icon="user"
+                              style={{ marginRight: '25px', marginLeft: '45px' }}
+                            />{' '}
                             {question.userAnonymous ? 'Anonyme' : question.username}
                           </span>
                           <span className="date">
@@ -508,7 +517,7 @@ function QuestionsPageById() {
                           </span>
                         </p>
                       </p>
- 
+
                       <h2 className="title">{question.title}</h2>
                       <p className="content">{question.content}</p>
                       <div className="tags">
@@ -527,7 +536,7 @@ function QuestionsPageById() {
                         <h3 className="comment-count-title">
                           {question.answers && question.answers.length} response :
                         </h3>
- 
+
                         <div className="comment-list">
                           {question.answers &&
                             question.answers.map((answer) => (
@@ -641,20 +650,20 @@ function QuestionsPageById() {
                                           )}
                                         </div>
                                       )}
-                                    {!answer.accepted && (
-            <CheckmarkIcon
-              isAccepted={answer.accepted}
-              onClick={() => handleAcceptAnswer(answer.id)}
-            />
-          )}
-          {answer.accepted && (
-            <CorrectAnswerLabel>
-              <IoIosCheckmarkCircleOutline />
-              Correct Answer
-            </CorrectAnswerLabel>
-          )}
+                                      {!answer.accepted && (
+                                        <CheckmarkIcon
+                                          isAccepted={answer.accepted}
+                                          onClick={() => handleAcceptAnswer(answer.id)}
+                                        />
+                                      )}
+                                      {answer.accepted && (
+                                        <CorrectAnswerLabel>
+                                          <IoIosCheckmarkCircleOutline />
+                                          Correct Answer
+                                        </CorrectAnswerLabel>
+                                      )}
                                     </Cader>
-                                   
+
                                     <span>
                                       <FontAwesomeIcon
                                         icon={faThumbsUp}
@@ -665,9 +674,9 @@ function QuestionsPageById() {
                                         }}
                                         disabled={voteValue1 === 1}
                                       />
- 
+
                                       <span className="mx-4">{answer.votes.length}</span>
- 
+
                                       <FontAwesomeIcon
                                         icon={faThumbsDown}
                                         onClick={() => handleVote1(0, answer.id)}
@@ -678,7 +687,7 @@ function QuestionsPageById() {
                                         disabled={voteValue1 === 0}
                                       />
                                     </span>
- 
+
                                     {answer.filePath && (
                                       <div>
                                         <h4>Fichier attaché :</h4>
@@ -859,5 +868,5 @@ function QuestionsPageById() {
     </>
   );
 }
- 
+
 export default QuestionsPageById;

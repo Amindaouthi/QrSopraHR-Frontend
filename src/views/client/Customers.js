@@ -126,7 +126,7 @@ const Customers = () => {
       });
 
      
-        const socket = new SockJS('http://localhost:8080/ws');
+        const socket = new SockJS('//localhost:8080/ws');
         const stompClient = new Client({
           webSocketFactory: () => socket,
           onConnect: (frame) => {
@@ -248,8 +248,8 @@ const Customers = () => {
                     width: "350px",
                     height: "40px",
                     border: "1px",
-                    borderRadius: "30%",
-                    boxShadow: "0 6px 6px rgba(0, 0, 0, 0.1)",
+                    borderRadius: "10%",
+                    boxShadow: " 1px rgba(0, 0, 0, 0.1)",
                     background: "#fff",
                     transition: "all 0.3s ease",
                   }}

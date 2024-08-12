@@ -16,13 +16,14 @@ const Register2 = () => (
           backgroundSize: '400% 400%',
           animation: 'gradient 15s ease infinite',
           position: 'absolute',
-          height: '100%',
+          height: '110%',
           width: '100%',
+          
           opacity: '0.3',
         },
       }}
     >
-      <Grid container spacing={0} justifyContent="center" sx={{ height: '100vh' }}>
+      <Grid container spacing={0} justifyContent="center" sx={{ height: '100vh', }}>
         <Grid
           item
           xs={12}
@@ -33,7 +34,7 @@ const Register2 = () => (
           justifyContent="center"
           alignItems="center"
         >
-          <Card elevation={9} sx={{ p: 4, zIndex: 1, width: '100%', maxWidth: '500px' }}>
+          <Card elevation={9} sx={{ p: 4, zIndex: 1, width: '100%', maxWidth: '500px',marginTop:"10px" }}>
             <Box display="flex" alignItems="center" justifyContent="center">
               <Logo />
             </Box>

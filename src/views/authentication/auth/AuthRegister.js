@@ -107,7 +107,7 @@ const AuthRegister = ({ title, subtitle, subtext }) => {
   };
 
   return (
-    <>
+    < >
       {title ? (
         <Typography fontWeight="700" variant="h2" mb={1}>
           {title}
