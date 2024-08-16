@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { NavLink, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faUser, faCalendar, faThumbsUp, faThumbsDown } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+
 import axios from 'axios';
 import './QuestionPageById.css';
 import NewNavbar from './homeComponents/NewNavbar';
-import { Alert } from 'bootstrap';
+import { useNavigate } from 'react-router-dom';
 import UserAvatar from './UserAvatar';
 import { FaLink } from 'react-icons/fa';
 import { IoIosCheckmarkCircleOutline } from 'react-icons/io';
@@ -113,14 +113,21 @@ const CheckmarkIcon = styled(IoIosCheckmarkCircleOutline)`
 function QuestionsPageById() {
   const [question, setQuestion] = useState(null);
   const [answer, setAnswer] = useState('');
-  const [answers, setAnswers] = useState();
+  const [answers, setAnswers] = useState([]);
   const { questionId } = useParams();
   const [file, setFile] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [isAccepted, setIsAccepted] = useState(false);
+  const navigate = useNavigate();
   const [voteValue, setVoteValue] = useState(null);
   const [totalVote, setTotalVote] = useState(null);
   const [voteValue1, setVoteValue1] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [fullScreenSrc, setFullScreenSrc] = useState('');
+  const [replyToId, setReplyToId] = useState(null);
+  const [replyContent, setReplyContent] = useState('');
+  const replyFormRef = useRef(null);
+  const [isModerator, setIsModerator] = useState(false);
 
   const token = localStorage.getItem('token');
 
@@ -128,6 +135,27 @@ function QuestionsPageById() {
   const userId = userObject ? userObject.id : null;
 
   library.add(faUser, faCalendar);
+
+  const refreshPage = () => {
+    navigate(0); // This will reload the current route
+  };
+
+  useEffect(() => {
+    try {
+      if (question && question.answers && Array.isArray(question.answers)) {
+        const acceptedAnswerExists = question.answers.some(
+          (answer) => answer.accepted === true || answer.accepted === 'true',
+        );
+
+        console.log('Accepted Answer Exists:', acceptedAnswerExists);
+        setIsAccepted(acceptedAnswerExists);
+      } else {
+        console.error('Expected question.answers to be an array but got:', question.answers);
+      }
+    } catch (error) {
+      console.error('Error processing question:', error);
+    }
+  }, [question]);
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
@@ -183,12 +211,6 @@ function QuestionsPageById() {
       setAnswer((prevAnswer) => `${prevAnswer} [${link}](${link})`);
     }
   };
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setAnswer((prevAnswer) => `${prevAnswer} \n[File: ${file.name}]`);
-    }
-  };
 
   const fetchQuestionById = async () => {
     try {
@@ -204,9 +226,6 @@ function QuestionsPageById() {
       console.error('Error fetching question data:', error.message);
     }
   };
-
-  const [isFullScreen, setIsFullScreen] = useState(false);
-  const [fullScreenSrc, setFullScreenSrc] = useState('');
 
   const handleImageClick = (src) => {
     setFullScreenSrc(src);
@@ -247,11 +266,6 @@ function QuestionsPageById() {
     fetchVote();
     fetchQuestionById();
   }, [questionId]);
-
-  const [replyToId, setReplyToId] = useState(null);
-  const [replyContent, setReplyContent] = useState('');
-  const replyFormRef = useRef(null);
-  const [imagePreview, setImagePreview] = useState(null);
 
   const handleReplyClick2 = (answerId) => {
     setReplyToId(answerId);
@@ -347,57 +361,175 @@ function QuestionsPageById() {
   const handleAcceptAnswer = async (answerId) => {
     const user = localStorage.getItem('user');
 
-    
     if (user) {
-      
       const parsedUser = JSON.parse(user);
-
-      
       const userId = parsedUser.id;
+      const questionCreatorId = question.userId;
 
-      
-      console.log('User ID:', userId);
+      if (userId !== questionCreatorId) {
+        Swal.fire(
+          'Sorry',
+          'Only the user who created the question can mark an answer as accepted',
+          'error',
+        );
+        return;
+      }
+
+      try {
+        const response = await axios.put(
+          `http://localhost:8080/api/questions/${answerId}/accept`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (response.status === 200) {
+          Swal.fire('Answer marked as correct', '', 'success');
+
+          setAnswers((prevAnswers) =>
+            prevAnswers.map((answer) =>
+              answer.id === answerId ? { ...answer, accepted: true } : answer,
+            ),
+          );
+          refreshPage();
+        }
+      } catch (error) {
+        console.error('Error accepting answer:', error);
+      }
     } else {
       console.log('No user found in localStorage.');
     }
-    const questionCreatorId = question.userId;
-    console.log(questionCreatorId); // Assurez-vous d'avoir l'ID du créateur de la question
+  };
 
-    if (userId !== questionCreatorId) {
-      Swal.fire(
-        'Sorry',
-        'Only the user who created the question can mark an answer as accepted',
-        'error',
-      );
-      return;
-    }
+  const handleUnacceptAnswer = async (answerId) => {
+    const user = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
 
-    try {
-      const response = await axios.put(
-        `http://localhost:8080/api/questions/${answerId}/accept`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+    if (user) {
+      const parsedUser = JSON.parse(user);
+      const userId = parsedUser.id;
+      const questionCreatorId = question.userId;
 
-      if (response.status === 200) {
-        Swal.fire('Answer marked as correct', '', 'success').then(() => {
-          window.location.reload();
-        });
-        setAnswers((prevAnswers) =>
-          prevAnswers.map((answer) =>
-            answer.id === answerId ? { ...answer, accepted: true } : { ...answer, accepted: false },
-          ),
+      if (userId !== questionCreatorId) {
+        Swal.fire(
+          'Sorry',
+          'Only the user who created the question can unmark an answer as accepted',
+          'error',
         );
+        return;
       }
-    } catch (error) {
-      console.error('Error accepting answer:', error);
+
+      try {
+        const response = await axios.put(
+          `http://localhost:8080/api/questions/${answerId}/unaccept`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (response.status === 200) {
+          Swal.fire('Answer unmarked as correct', '', 'success');
+
+          setAnswers((prevAnswers) =>
+            prevAnswers.map((answer) =>
+              answer.id === answerId ? { ...answer, accepted: false } : answer,
+            ),
+          );
+          refreshPage();
+        }
+      } catch (error) {
+        console.error('Error unaccepting answer:', error);
+      }
+    } else {
+      console.log('No user found in localStorage.');
     }
   };
-  
+
+  //moderator supprim handle
+  useEffect(() => {
+    const fetchUserRoles = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && user.roles !== null) {
+          const userRoles = user.roles;
+          if (userRoles.includes('ROLE_MODERATOR')) {
+            setIsModerator(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user roles:', error.message);
+      }
+    };
+
+    fetchUserRoles();
+  }, []);
+
+  const handleTrashClick = async (questionId, answerId) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(
+          `http://localhost:8080/api/questions/${questionId}/answers/${answerId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+            },
+          },
+        );
+
+        Swal.fire('Deleted!', 'The answer has been deleted.', 'success');
+        refreshPage();
+      } catch (error) {
+        Swal.fire('Error!', 'There was an error deleting your answer.', 'error');
+      }
+    }
+  };
+
+  const handleTrashClickForResponse = async (questionId, parentAnswerId, responseId) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(
+          `http://localhost:8080/api/questions/${questionId}/answers/${parentAnswerId}/responses/${responseId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        Swal.fire('Deleted!', 'The reply has been deleted.', 'success');
+        refreshPage();
+      } catch (error) {
+        Swal.fire('Error!', 'There was an error deleting your reply.', 'error');
+      }
+    }
+  };
+
   return (
     <>
       <NewNavbar />
@@ -524,14 +656,14 @@ function QuestionsPageById() {
                         <p className="tag">Tags :</p>
                         <div className="tag-container">
                           {question.tags &&
-                            question.tags.map((tag) => (
-                              <div key={tag.id} className="tag-item">
+                            question.tags.map((tag, index) => (
+                              <div key={index} className="tag-item">
                                 {tag}
-                                <a className="tagli"></a>
                               </div>
                             ))}
                         </div>
                       </div>
+
                       <div className="comments-list-wrap">
                         <h3 className="comment-count-title">
                           {question.answers && question.answers.length} response :
@@ -631,7 +763,7 @@ function QuestionsPageById() {
                                                 style={{
                                                   width: '100%',
                                                   height: '600px',
-                                                  border: 'none',
+
                                                   borderRadius: '10px',
                                                   boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
                                                   border: '1px solid #ddd',
@@ -650,17 +782,34 @@ function QuestionsPageById() {
                                           )}
                                         </div>
                                       )}
-                                      {!answer.accepted && (
+                                      {answer.accepted ? (
+                                        <div
+                                          onClick={() => handleUnacceptAnswer(answer.id)}
+                                          style={{
+                                            cursor: 'pointer',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                          }}
+                                        >
+                                          <CorrectAnswerLabel>
+                                            <IoIosCheckmarkCircleOutline />
+                                            Correct Answer
+                                          </CorrectAnswerLabel>
+                                        </div>
+                                      ) : (
                                         <CheckmarkIcon
                                           isAccepted={answer.accepted}
                                           onClick={() => handleAcceptAnswer(answer.id)}
                                         />
                                       )}
-                                      {answer.accepted && (
-                                        <CorrectAnswerLabel>
-                                          <IoIosCheckmarkCircleOutline />
-                                          Correct Answer
-                                        </CorrectAnswerLabel>
+                                      {isModerator && (
+                                        <div style={{ marginTop: '10px' }}>
+                                          <FontAwesomeIcon
+                                            icon={faTrashAlt}
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={() => handleTrashClick(question.id, answer.id)}
+                                          />
+                                        </div>
                                       )}
                                     </Cader>
 
@@ -770,6 +919,21 @@ function QuestionsPageById() {
                                                 <p style={{ margin: '5px 0', color: '#666' }}>
                                                   {response.content}
                                                 </p>
+                                                {isModerator && (
+                                                  <div style={{ marginTop: '10px' }}>
+                                                    <FontAwesomeIcon
+                                                      icon={faTrashAlt}
+                                                      style={{ cursor: 'pointer' }}
+                                                      onClick={() =>
+                                                        handleTrashClickForResponse(
+                                                          question.id,
+                                                          answer.id,
+                                                          response.id,
+                                                        )
+                                                      }
+                                                    />
+                                                  </div>
+                                                )}
                                               </div>
                                             </Comment>
                                           ))}
@@ -781,80 +945,95 @@ function QuestionsPageById() {
                                 <Separator />
                               </React.Fragment>
                             ))}
-                          <form onSubmit={handleSubmit}>
-                            <div style={{ position: 'relative' }}>
-                              <textarea
-                                value={answer}
-                                onChange={(e) => setAnswer(e.target.value)}
-                                placeholder="Your answer"
-                                cols="30"
-                                rows="3"
-                                style={{
-                                  width: '100%',
-                                  marginBottom: '10px',
-                                  paddingRight: '40px',
-                                }}
-                              />
-                              <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
-                                <button
-                                  type="button"
-                                  onClick={handleAddLink}
-                                  style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    fontSize: '24px',
-                                  }}
-                                >
-                                  <FaLink />
-                                </button>
-                                <input
-                                  type="file"
-                                  id="fileInput"
-                                  onChange={handleFileChange}
-                                  style={{ display: 'none' }}
-                                />
-                                <label
-                                  htmlFor="fileInput"
-                                  style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    fontSize: '24px',
-                                  }}
-                                >
-                                  <svg
-                                    viewBox="0 0 24 24"
-                                    style={{ width: '24px', height: '24px' }}
-                                  >
-                                    <path d="M20,20H4V4H12L14,2H4C2.89,2 2,2.89 2,4V20C2,21.1 2.9,22 4,22H20C21.1,22 22,21.1 22,20V10H20V20M20,8V4H14L20,8Z" />
-                                  </svg>
-                                </label>
-                              </div>
+
+                          {isAccepted ? (
+                            <div>
+                              <p>
+                                Apologies, but with your effort ❤ , we found the best answer. The
+                                question is now closed.
+                              </p>
                             </div>
-                            {filePreview && (
-                              <div>
-                                <h4>Preview :</h4>
-                                <img
-                                  src={filePreview}
-                                  alt="Preview"
-                                  style={{ maxWidth: '200px' }}
+                          ) : (
+                            <form onSubmit={handleSubmit}>
+                              <div style={{ position: 'relative' }}>
+                                <textarea
+                                  value={answer}
+                                  onChange={(e) => setAnswer(e.target.value)}
+                                  placeholder="Your answer"
+                                  cols="30"
+                                  rows="3"
+                                  style={{
+                                    width: '100%',
+                                    marginBottom: '10px',
+                                    paddingRight: '40px',
+                                    backgroundColor: '#fff',
+                                    border: '1px solid #ddd',
+                                  }}
                                 />
+                                <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
+                                  <button
+                                    type="button"
+                                    onClick={handleAddLink}
+                                    style={{
+                                      background: 'none',
+                                      border: 'none',
+                                      cursor: 'pointer',
+                                      fontSize: '24px',
+                                      pointerEvents: 'auto',
+                                    }}
+                                  >
+                                    <FaLink />
+                                  </button>
+                                  <input
+                                    type="file"
+                                    id="fileInput"
+                                    onChange={handleFileChange}
+                                    style={{ display: 'none' }}
+                                  />
+                                  <label
+                                    htmlFor="fileInput"
+                                    style={{
+                                      background: 'none',
+                                      border: 'none',
+                                      cursor: 'pointer',
+                                      fontSize: '24px',
+                                      pointerEvents: 'auto',
+                                    }}
+                                  >
+                                    <svg
+                                      viewBox="0 0 24 24"
+                                      style={{ width: '24px', height: '24px' }}
+                                    >
+                                      <path d="M20,20H4V4H12L14,2H4C2.89,2 2,2.89 2,4V20C2,21.1 2.9,22 4,22H20C21.1,22 22,21.1 22,20V10H20V20M20,8V4H14L20,8Z" />
+                                    </svg>
+                                  </label>
+                                </div>
                               </div>
-                            )}
-                            <button
-                              className="btn"
-                              style={{
-                                marginRight: '20px',
-                                marginTop: '20px',
-                                backgroundColor: '#cf022b',
-                                color: '#fff',
-                              }}
-                              type="submit"
-                            >
-                              Post your answer
-                            </button>
-                          </form>
+                              {filePreview && (
+                                <div>
+                                  <h4>Preview :</h4>
+                                  <img
+                                    src={filePreview}
+                                    alt="Preview"
+                                    style={{ maxWidth: '200px' }}
+                                  />
+                                </div>
+                              )}
+
+                              <button
+                                className="btn"
+                                style={{
+                                  marginRight: '20px',
+                                  marginTop: '20px',
+                                  backgroundColor: '#cf022b',
+                                  color: '#fff',
+                                }}
+                                type="submit"
+                              >
+                                Post your answer
+                              </button>
+                            </form>
+                          )}
                         </div>
                       </div>
                     </div>

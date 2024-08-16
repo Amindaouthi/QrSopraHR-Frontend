@@ -7,7 +7,8 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  Chip,
+  Select,
+  MenuItem,
   IconButton,
   TextField,
   Button,
@@ -71,7 +72,7 @@ const ListUsers = () => {
           text: "L'utilisateur a été supprimé avec succès.",
           confirmButtonText: 'OK',
         });
-        setUsers((prevUsers) => prevUsers.filter((user) => user.matricule !== userId));
+        setUsers((prevUsers) => prevUsers.filter((user) => user.matricul !== userId));
       }
     } catch (error) {
       console.error("Erreur lors de la suppression de l'utilisateur :", error);
@@ -86,7 +87,7 @@ const ListUsers = () => {
 
   const handleRoleEdit = async (userId, newRole) => {
     try {
-      const response = await axios.put(`http://localhost:8080/api/${userId}/role`, {
+      await axios.put(`http://localhost:8080/api/${userId}/role`, {
         newRoleName: newRole,
       });
       setUsers((prevUsers) =>
@@ -114,19 +115,18 @@ const ListUsers = () => {
     }
   };
 
-  const handleRoleClick = async (userId, currentRole) => {
-    const { value: newRole } = await Swal.fire({
+  const handleRoleClick = async (userId, currentRole, newRole) => {
+    const result = await Swal.fire({
       title: 'Modifier le rôle',
-      input: 'text',
-      inputLabel: 'Entrez le nouveau rôle',
-      inputValue: currentRole,
+      text: `Êtes-vous sûr de vouloir changer le rôle en ${newRole.replace('ROLE_', '')} ?`,
+      icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Sauvegarder',
+      confirmButtonText: 'Oui, modifier',
       cancelButtonText: 'Annuler',
     });
 
-    if (newRole) {
-      handleRoleEdit(userId, newRole);
+    if (result.isConfirmed) {
+      handleRoleEdit(userId, newRole); // Proceed to update the role
     }
   };
 
@@ -163,7 +163,7 @@ const ListUsers = () => {
   return (
     <DashboardCard title="User List">
       <Box sx={{ overflow: 'auto', width: { xs: '280px', sm: 'auto' } }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 , mt:"10px"}}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, mt: '10px' }}>
           <TextField
             label="Filter by Nom"
             variant="outlined"
@@ -187,6 +187,11 @@ const ListUsers = () => {
               <TableCell>
                 <Typography variant="subtitle2" fontWeight={600}>
                   Matricule
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="subtitle2" fontWeight={600}>
+                  Username
                 </Typography>
               </TableCell>
               <TableCell>
@@ -232,7 +237,14 @@ const ListUsers = () => {
                   </Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography sx={{ fontSize: '15px', fontWeight: '500' }}>{user.email}</Typography>
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    {user.username}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography sx={{ fontSize: '15px', fontWeight: '500' }}>
+                    {user.email.length > 10 ? `${user.email.substring(0, 10)}...` : user.email}
+                  </Typography>
                 </TableCell>
                 <TableCell>
                   <Typography variant="subtitle2" fontWeight={600}>
@@ -245,14 +257,25 @@ const ListUsers = () => {
                   </Typography>
                 </TableCell>
                 <TableCell>
-                  {user.roles &&
-                    user.roles.map((role) => (
-                      <Chip
-                        key={role}
-                        label={role}
-                        onClick={() => handleRoleClick(user.matricul, role)}
-                      />
-                    ))}
+                  <Select
+                    value={user.roles[0] || 'ROLE_USER'}
+                    onChange={(e) => handleRoleClick(user.matricul, user.roles[0], e.target.value)} // Call handleRoleClick with current and new roles
+                    displayEmpty
+                    inputProps={{ 'aria-label': 'Without label' }}
+                  >
+                    <MenuItem value={user.roles[0]} disabled>
+                      {user.roles[0].replace('ROLE_', '')}
+                    </MenuItem>
+                    {user.roles[0] !== 'ROLE_USER' && (
+                      <MenuItem value="ROLE_USER">USER</MenuItem>
+                    )}
+                    {user.roles[0] !== 'ROLE_MODERATOR' && (
+                      <MenuItem value="ROLE_MODERATOR">MODERATOR</MenuItem>
+                    )}
+                    {user.roles[0] !== 'ROLE_ADMIN' && (
+                      <MenuItem value="ROLE_ADMIN">ADMIN</MenuItem>
+                    )}
+                  </Select>
                 </TableCell>
                 <TableCell align="right">
                   <IconButton onClick={() => handleDeleteUser(user.matricul)}>
@@ -263,9 +286,9 @@ const ListUsers = () => {
             ))}
           </TableBody>
         </Table>
-        <h1 style={{ marginTop: '30px', fontSize: '14px', marginRight: '50px' }}>
-          You can change the role by clicking on it *(ROLE_MODERATOR OR ROLE_USER OR ROLE_ADMIN)
-        </h1>
+        <Typography variant="body2" sx={{ mt: 3 }}>
+          You can change the role by selecting a new role from the dropdown.
+        </Typography>
       </Box>
     </DashboardCard>
   );

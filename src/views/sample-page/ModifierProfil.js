@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Typography } from '@mui/material';
 import PageContainer from 'src/components/container/PageContainer';
 import DashboardCard from '../../components/shared/DashboardCard';
 import 'src/views/sample-page/ModifierProfil.css';
@@ -12,7 +11,7 @@ const ModifierProfile = () => {
     prenom: '',
     nom: '',
     email: '',
-    username: '', // Change the key to match the input name
+    username: '',
     password: ''
   });
   const [successMessage, setSuccessMessage] = useState('');
@@ -25,35 +24,24 @@ const ModifierProfile = () => {
       [name]: value
     });
   };
-   
+
   const userData = JSON.parse(localStorage.getItem('user'));
-const accessToken = userData.accessToken;
-const userId = userData.id;
+  const accessToken = userData.accessToken;
+  const userId = userData.id;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // Retrieve user ID and access token from localStorage
-    
-
-    
-    // Check if user ID and access token are available
-    if ( !accessToken) {
-      console.error(' access token is missing from localStorage');
-      return;
-    }
-    
-    if (!userId ) {
-      console.error('User ID  is missing from localStorage');
+    if (!accessToken || !userId) {
+      console.error('User ID or access token is missing from localStorage');
       return;
     }
 
-    // Check if any field is empty
     if (
       !formData.prenom.trim() ||
       !formData.nom.trim() ||
       !formData.email.trim() ||
-      !formData.username.trim() || // Change the key to match the input name
+      !formData.username.trim() ||
       !formData.password.trim()
     ) {
       setErrorMessage('All fields are required');
@@ -61,8 +49,7 @@ const userId = userData.id;
     }
 
     try {
-      // Send a PUT request to update the profile
-      const response = await axios.put(
+      await axios.put(
         `http://localhost:8080/api/user/${userId}`,
         formData,
         {
@@ -72,79 +59,86 @@ const userId = userData.id;
         }
       );
 
-      // Handle success response
       setSuccessMessage('Profile updated successfully');
       setErrorMessage('');
-      alert('user modification reussi');
+      alert('User modification succeeded');
       navigate('/dashboard');
     } catch (error) {
-      // Handle error
       setErrorMessage('Error updating profile');
       setSuccessMessage('');
     }
   };
 
   return (
-    <div>
-      <PageContainer title="Modifier Profil" description="Modifier Profil">
-        <DashboardCard title="Modifier Profil">
+    <PageContainer title="Modifier Profil" description="Modifier Profil">
+      <DashboardCard title="Modifier Profil">
+        <div className="testbox">
           <form id="formMP" onSubmit={handleSubmit}>
-            <label>
-              Nom complet *
-              <div>
+            <div className="form-group item">
+              <label>Nom complet *</label>
+              <div className="name-fields">
                 <input
                   type="text"
-                  name="prenom" // Match the key in formData
+                  name="prenom"
                   placeholder="Prénom"
-                  required
+                  value={formData.prenom}
                   onChange={handleChange}
+                  required
                 />
-                <br />
                 <input
                   type="text"
-                  name="nom" // Match the key in formData
+                  name="nom"
                   placeholder="Nom"
-                  required
+                  value={formData.nom}
                   onChange={handleChange}
+                  required
                 />
               </div>
-            </label>
+            </div>
 
-            <label>
-              Adresse e-mail *
+            
+
+            <div className="form-group item">
+              <label>Nom d'utilisateur *</label>
+              <input
+                type="text"
+                name="username"
+                
+                value={formData.username}
+                onChange={handleChange}
+                placeholder={userData.username}
+                required
+              />
+            </div>
+            <div className="form-group item">
+              <label>Adresse e-mail *</label>
               <input
                 type="email"
                 name="email"
-                required
+                value={formData.email}
                 onChange={handleChange}
-              />
-            </label>
-
-            <label>
-              Username
-              <input
-                type="text"
-                name="username" // Match the key in formData
-                placeholder="Username"
+                placeholder={userData.email}
                 required
-                onChange={handleChange}
               />
-            </label>
+            </div>
 
-            <label>
-              Password
+            <div className="form-group item">
+              <label>Mot de passe *</label>
               <input
                 name="password"
                 type="password"
-                required
+                value={formData.password}
                 onChange={handleChange}
+                required
               />
-            </label>
+            </div>
 
-            <button type="submit">Modifier</button>
+            <div className="btn-block">
+              <button type="submit">Modifier</button>
+            </div>
           </form>
-        </DashboardCard>
-      </PageContainer>
+        </div>
+      </DashboardCard>
 
       {successMessage && (
         <div className="success-message">
@@ -157,7 +151,7 @@ const userId = userData.id;
           {errorMessage}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 };
 
