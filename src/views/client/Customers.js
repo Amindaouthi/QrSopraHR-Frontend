@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import NewNavbar from './homeComponents/NewNavbar';
 import Sidebar from './homeComponents/sidebar';
@@ -11,7 +10,10 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
+import moment from 'moment';
+import { useTranslation } from 'react-i18next';
 
+// Styled components for the chat UI
 const Chatbox = styled.div`
   position: fixed;
   bottom: 0;
@@ -37,6 +39,27 @@ const Chatbox = styled.div`
   }
 `;
 
+const SendButton = styled.button`
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #45a049;
+  }
+
+  &:active {
+    background-color: #3e8e41;
+  }
+`;
+
 const ChatHeader = styled.div`
   background: grey;
   color: white;
@@ -53,6 +76,9 @@ const ChatBody = styled.div`
   padding: 15px;
   overflow-y: auto;
   background: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 `;
 
 const ChatFooter = styled.div`
@@ -87,6 +113,56 @@ const CloseButton = styled.button`
   }
 `;
 
+const MessageBubble = styled.div`
+  max-width: 70%;
+  padding: 10px 15px;
+  border-radius: 20px;
+  background-color: ${({ $isSender }) => ($isSender ? '#dc3545' : '#f1f1f1')};
+  color: ${({ $isSender }) => ($isSender ? '#ffffff' : '#000000')};
+  align-self: ${({ $isSender }) => ($isSender ? 'flex-end' : 'flex-start')};
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  position: relative;
+
+  &:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    ${({ $isSender }) =>
+      $isSender
+        ? `
+        right: -10px;
+        border-left: 10px solid #4CAF50;
+      `
+        : `
+        left: -10px;
+        border-right: 10px solid #f1f1f1;
+      `}
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+  }
+`;
+
+const Timestamp = styled.span`
+  display: block;
+  margin-top: 5px;
+  font-size: 0.8rem;
+  color: #777;
+  text-align: ${({ $isSender }) => ($isSender ? 'right' : 'left')};
+`;
+
+const H1 = styled.h1`
+  margin-top: 3%; /* Slight margin to give space at the top */
+  font-size: 2em; /* A moderate font size */
+  font-weight: 600; /* Semi-bold for a balanced emphasis */
+  color: #666666; /* Subtle black color with slight transparency */
+  text-align: center; /* Center the heading */
+  font-family: 'Arial', sans-serif; /* Clean, sans-serif font */
+  letter-spacing: 0.5px; /* Subtle letter spacing */
+  padding-bottom: 8px; /* Gentle padding below the text */
+  border-bottom: 1px solid #ccc; /* A fine, light border for definition */
+  line-height: 1.4; /* Improved line spacing for readability */
+`;
+
 const Customers = () => {
   const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user'));
@@ -100,18 +176,23 @@ const Customers = () => {
   const [messageInput, setMessageInput] = useState('');
   const [stompClient, setStompClient] = useState(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
-    // Fetch users
+    // Fetch users from the backend
     axios
-      .get('http://localhost:8080/api/users')
+      .get('http://localhost:8080/api/users', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       .then((response) => {
         const userDataString = localStorage.getItem('user');
         if (userDataString) {
           try {
             const userData = JSON.parse(userDataString);
             const filteredUsers = response.data.filter(
-              (user) => user.matricul !== parseInt(userData.id),
+              (user) => user.matricul !== parseInt(userData.id)
             );
             setUsers(filteredUsers);
           } catch (error) {
@@ -125,37 +206,63 @@ const Customers = () => {
         console.error('Error fetching users:', error);
       });
 
-     
-        const socket = new SockJS('//localhost:8080/ws');
-        const stompClient = new Client({
-          webSocketFactory: () => socket,
-          onConnect: (frame) => {
-            console.log('Connected: ' + frame);
-            stompClient.subscribe('/user/queue/messages', (message) => {
-              if (message.body) {
+    // Set up WebSocket connection
+    const socket = new SockJS('http://localhost:8080/chat-websocket');
+    const client = new Client();
+
+    client.configure({
+      webSocketFactory: () => socket,
+      onConnect: (frame) => {
+        console.log('Connected to WebSocket server');
+      },
+      onStompError: (frame) => {
+        console.error('Error connecting to WebSocket:', frame);
+      },
+      reconnectDelay: 5000,
+    });
+
+    client.activate();
+    setStompClient(client);
+
+    return () => {
+      if (client) {
+        client.deactivate();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (stompClient && currentChatUserId) {
+      if (stompClient.connected) {
+        const subscription = stompClient.subscribe(
+          `/user/${senderId}/queue/messages`,
+          (message) => {
+            if (message.body) {
+              try {
                 const incomingMessage = JSON.parse(message.body);
+                const formattedTimestamp = moment(incomingMessage.timestamp).format('HH:mm');
+                
                 setMessages((prevMessages) => [
                   ...prevMessages,
-                  { ...incomingMessage, sender: 'Them' },
+                  {
+                    ...incomingMessage,
+                    timestamp: formattedTimestamp, // Format the timestamp for display
+                  },
                 ]);
+              } catch (error) {
+                console.error('Error parsing message:', error);
               }
-            });
-          },
-          onStompError: (frame) => {
-            console.error('Error connecting to WebSocket:', frame);
-          },
-          reconnectDelay: 5000, // Reconnect every 5 seconds if disconnected
-        });
-      
-        stompClient.activate();
-        setStompClient(stompClient);
-      
+            }
+          }
+        );
+
         return () => {
-          stompClient.deactivate();
+          subscription.unsubscribe();
         };
-      }, []);
-      
-    
+      }
+    }
+  }, [stompClient, currentChatUserId, senderId]);
+
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -164,30 +271,59 @@ const Customers = () => {
     setCurrentChatUser(username);
     setCurrentChatUserId(id);
     setIsChatboxOpen(true);
+    setMessages([]); // Clear messages when starting a new chat
+
+    // Retrieve historical messages between the current user and the selected user
+    axios
+      .get(`http://localhost:8080/messages/${senderId}/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Include the token in the headers
+        },
+      })
+      .then((response) => {
+        console.log(response);
+        setMessages(response.data);
+      })
+      .catch((error) => {
+        console.error('Error fetching chat history:', error);
+      });
   };
 
   const handleCloseChatbox = () => {
     setIsChatboxOpen(false);
     setCurrentChatUser(null);
     setCurrentChatUserId(null);
+    setMessages([]); // Clear messages when chat is closed
   };
 
   const handleSendMessage = () => {
-    if (messageInput.trim() !== '' && stompClient && currentChatUserId) {
+    if (messageInput.trim() === '') {
+      return; // Do nothing if the input is empty
+    }
+
+    if (stompClient && currentChatUserId) {
       if (stompClient.connected) {
         const message = {
           content: messageInput,
           senderId: senderId,
           receiverId: currentChatUserId,
+          timestamp: new Date(), // Use the current timestamp in ISO 8601 format
         };
-  
+
+        console.log('Sending message: ', message);
+
         stompClient.publish({
           destination: '/app/chat',
           body: JSON.stringify(message),
         });
+
         setMessages((prevMessages) => [
           ...prevMessages,
-          { content: messageInput, senderId: senderId, sender: 'You' },
+          {
+            ...message,
+            sender: 'You',
+            timestamp: moment().format('HH:mm'), // Display the time in HH:mm format
+          },
         ]);
         setMessageInput('');
       } else {
@@ -195,10 +331,9 @@ const Customers = () => {
       }
     }
   };
-  
 
   const filteredUsers = users.filter((user) =>
-    user.username.toLowerCase().includes(searchTerm.toLowerCase()),
+    user.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -209,28 +344,22 @@ const Customers = () => {
         <div style={{ flex: 1 }}>
           <div style={{ marginTop: '13vh', zIndex: 1, backgroundColor: 'white' }}>
             <div className="main" style={{ marginTop: '10px' }}>
-              <h1
-                style={{
-                  color: 'black',
-                  fontFamily: 'inherit',
-                  marginLeft: '5%',
-                }}
-              >
-                Users
-              </h1>
+              <H1>{t('Users')}</H1>
+
               <div
                 className="search-bar"
                 style={{
                   display: 'flex',
                   justifyContent: 'center',
-                  marginBottom: '20px',
+                  margin: '20px auto',
                   marginTop: '60px',
-                  marginLeft: '-57%',
+                  width: '100%',
+                  maxWidth: '400px',
                 }}
               >
                 <TextField
                   type="text"
-                  placeholder="Find a user"
+                  placeholder={t('Find a user')}
                   value={searchTerm}
                   onChange={handleSearchChange}
                   variant="outlined"
@@ -244,14 +373,13 @@ const Customers = () => {
                   }}
                   style={{
                     marginTop: '10px',
-                    
-                    width: "350px",
-                    height: "40px",
-                    border: "1px",
-                    borderRadius: "10%",
-                    boxShadow: " 1px rgba(0, 0, 0, 0.1)",
-                    background: "#fff",
-                    transition: "all 0.3s ease",
+                    width: '350px',
+                    height: '40px',
+                    border: '1px',
+                    borderRadius: '10%',
+                    boxShadow: '1px rgba(0, 0, 0, 0.1)',
+                    background: '#fff',
+                    transition: 'all 0.3s ease',
                   }}
                 />
               </div>
@@ -280,12 +408,16 @@ const Customers = () => {
           </ChatHeader>
           <ChatBody>
             {messages.map((msg, index) => (
-              <div key={index}>
+              <MessageBubble key={index} $isSender={msg.senderId === senderId}>
                 <strong>{msg.senderId === senderId ? 'You' : currentChatUser}: </strong>
                 {msg.content}
-              </div>
+                <Timestamp $isSender={msg.senderId === senderId}>
+                  {msg.timestamp}
+                </Timestamp>
+              </MessageBubble>
             ))}
           </ChatBody>
+
           <ChatFooter>
             <MessageInput
               type="text"
@@ -293,7 +425,7 @@ const Customers = () => {
               value={messageInput}
               onChange={(e) => setMessageInput(e.target.value)}
             />
-            <button onClick={handleSendMessage}>Send</button>
+            <SendButton onClick={handleSendMessage}>Send</SendButton>
           </ChatFooter>
         </Chatbox>
       )}

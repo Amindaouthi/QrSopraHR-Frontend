@@ -12,11 +12,12 @@ import { faStar } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Darkmode from 'darkmode-js';
-import { icon } from '@fortawesome/fontawesome-svg-core';
 import '../homeComponents/QuestionsPage.css';
 import { useTranslation } from 'react-i18next';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons'
-import { Margin } from '@mui/icons-material';
+
+
+
 const QuestionStat = styled.div`
   text-align: center;
   display: inline-block;
@@ -35,25 +36,40 @@ const QuestionStat = styled.div`
 
 
 const QuestionTitleArea = styled.div`
-  padding: 0px 30px;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
 `;
 
 const Tag = styled.span`
   display: inline-block;
-  margin-right: 5px;
-  background-color: rgb(0 0 0 / 10%);
-  color: #000000;
-  padding: 7px;
+  margin-right: 8px;
+  background-color: #e2e3e5;
+  color: #343a40;
+  padding: 6px 10px;
   border-radius: 4px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  margin-top: 5px;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #ced4da;
+  }
 `;
 
 const QuestionLink = styled(Link)`
   text-decoration: none;
   color: #bc1434;
-  font-size: 1.1rem;
-  display: block;
-  margin-bottom: 5px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: #a51129;
+  }
 `;
 
 const WhoAndWhen = styled.div`
@@ -69,50 +85,94 @@ const UserLink = styled.a`
 `;
 
 const StyledQuestionRow = styled.div`
-  background-color: rgba(0, 0, 0, 0.01);
-  padding: 15px 15px 10px;
+  background-color: #f8f9fa;
+  padding: 20px;
   display: grid;
-  grid-template-columns: repeat(3, 50px) 1fr;
-  border: 1px solid grey;
-  border-radius: 5px;
+  grid-template-columns: repeat(3, 60px) 1fr 50px; /* Ajustement des colonnes */
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  margin-right: 10px;
+  margin-left: 10px;
   margin-bottom: 20px;
-  padding: 10px;
-  margin-right:10px;
-  box-shadow: 1px 1px #888888;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 `;
 
 const FilterContainer = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  color: black;
+  align-items: center; /* Align items vertically in the center */
+  padding: 20px; /* Add padding for better spacing */
+  background-color: #f8f9fa; /* Light background color for contrast */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  margin-bottom: 20px; /* Space between other components */
+  color: #333; /* Slightly darker text color for readability */
 `;
 
 const FilterItem = styled.div`
   display: flex;
   flex-direction: column;
-  margin-right: 10px;
+  margin-right: 15px; /* Increased spacing between filter items */
   flex: 1;
 `;
 
+const FilterTitle = styled.span`
+  display: inline-block;
+  font-size: 1rem; /* Smaller font size */
+  font-weight: 500; /* Lighter font weight */
+  color: #555; /* Softer text color for a refined look */
+  
+  padding: 6px 12px; /* Slightly smaller padding */
+  
+  margin-bottom: 8px; /* Space below the title */
+  
+  letter-spacing: 0.5px; /* Slight letter spacing for style */
+`;
+
 const FilterItemLabel = styled.span`
-  margin-bottom: 5px;
-  font-weight: bold;
+  margin-bottom: 8px; /* Increased margin for better spacing */
+  font-weight: 600; /* Slightly bolder font */
+  color: #555; /* Subtle color change for labels */
 `;
 
 const FilterInput = styled.input`
-  padding: 8px;
-  border: 1px solid #ccc;
+  padding: 10px; /* Increased padding for a more substantial feel */
+  border: 1px solid #ccc; /* Keep the border light and neutral */
   border-radius: 4px;
   box-sizing: border-box;
+  font-size: 1rem; /* Increased font size for readability */
+  transition: border-color 0.3s ease; /* Smooth transition on focus */
+
+  &:focus {
+    border-color: #bc1434; /* Highlight color on focus */
+    outline: none; /* Remove default outline */
+  }
 `;
 
 const FilterSelect = styled.select`
-  padding: 8px;
+  padding: 10px; /* Increased padding for consistency */
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+
+  &:focus {
+    border-color: #bc1434;
+    outline: none;
+  }
 `;
+
 
 const FavoriteIcon = styled.div`
   &:hover {
@@ -493,19 +553,19 @@ useEffect(() => {
             onAllQuestionsClick={handleAllQuestionsClick}
           />
           <>
+
             <div
               className="filter-container"
               style={{
-                borderTop: 'solid 1px gray',
-                borderRight: 'solid 1px gray',
-                borderLeft: 'solid 1px gray',
-                borderBottom: 'solid 1px gray',
+                
                 marginBottom: "20px",
                 marginRight: "10px",
+                marginLeft:"10px",
                 paddingBottom: '20px',
                 paddingTop: 10,
               }}
             >
+            <FilterTitle> {t('make your search easy :')}</FilterTitle>
               <FilterContainer className="mb-4">
                 <FilterItem style={{ paddingLeft: "10px" }}>
                   <FilterItemLabel>{t('Title')}:</FilterItemLabel>

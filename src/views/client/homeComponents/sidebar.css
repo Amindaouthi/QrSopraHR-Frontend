@@ -1,101 +1,129 @@
-.stack-index {
-    display: block !important;
-    min-height: 85vh;
-    min-width:  fit-content;
-    
-}
+/* General Body and HTML Styles */
 body, html {
    height: 100%;
    margin: 0;
+   font-family: Arial, sans-serif; /* Ensure a consistent font across the page */
+   background-color: #f4f4f4; /* Slightly off-white background for the entire page */
+   color: #333; /* Default text color */
+}
+
+/* Sidebar Styles */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 10px;
+    width: 250px; /* Adjusted width for better consistency */
+    min-height: 100vh; /* Ensure sidebar takes up full height */
+    border-right: 1px solid #ddd;
+    background-color: #f0f0f0; /* Light background color for sidebar */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Slight shadow for depth */
+}
+
+/* Sidebar Container */
+.sidebar-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #f0f0f0; /* Ensure the background color is consistent throughout */
+}
+
+/* Sidebar Options Container */
+.sidebar-options {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding-top: 20px; /* Add some space at the top of the options */
+}
+
+/* Individual Sidebar Option */
+.sidebar-option {
+    display: flex;
+    flex-direction: column;
+    margin: 10px 0;
+    font-size: 14px;
+    transition: all 0.3s ease; /* Smooth transition for hover effects */
+}
+
+/* Links in Sidebar */
+.sidebar-option a {
+    text-decoration: none;
+    color: #333; /* Darker default color for better contrast */
+    padding: 10px 15px;
+    border-radius: 8px; /* Rounded corners for links */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.sidebar-option a:hover {
+    background-color: #e0e0e0; /* Slightly darker hover effect background */
+    color: #bc1434; /* Hover color for links */
+}
+
+/* Active Link Styles */
+ /* When the link is active */
+ .sidebar-option a:active,
+ .sidebar-option a.active,
+ .sidebar-option a:focus { /* This includes both active and focused states */
+     background-color: #bc1434;
+     color: #fff; /* White text for active, clicked, and focused links */
  }
+
+/* Sidebar Icon and Text */
+.sidebar-option .link {
+    display: flex;
+    align-items: center; /* Center align icon and text */
+    gap: 10px; /* Space between icon and text */
+}
+
+/* Stack Index Styles */
+.stack-index {
+    display: block !important;
+    min-height: 85vh;
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px; /* Added padding for better content spacing */
+}
+
+/* Stack Index Content Styles */
 .stack-index-content {
-    display:flex;
+    display: flex;
     width: 100%;
     justify-content: center;
-    margin-left: -25px;
-    margin-right: -25px;
-   }
-
-/* sidebar.js file css */
-.sidebar{
-   
-    display:flex;
-    padding: 20px 0px 10px 10px;
-    height: 100%;
-    flex: 0.5;
-    max-width: 280px;
-    height: 100%;
-    border-right: 1px solid #ddd;
+    padding: 0 25px; /* Use padding instead of margin for consistency */
 }
 
-.sidebar-container{
-   
-   display: flex;
-  height: 100%;
-}
-.sidebar-options {
-   
-   display: flex;
-    flex-direction: column;
-    width: 200px;
-}
-.sidebar-option {
-   
-    display: flex;
-     flex-direction: column;
-     margin: 10px 0;
-     font-size: 14px;
- }
-
- a{
-    text-decoration: none;
-    
- }
-
- a:hover {
-    color:#000;
- }
-
- .sidebar-option >p {
-    color:#000;
-    font-size: 14px;
-    font-family: inherit;
-    
- }
-
- .link{
+/* Tag List Styles */
+.tags {
     display: flex;
     flex-direction: column;
- }
+    color: #333; /* Darker color for better contrast */
+    margin: 10px 20px;
+}
 
- .link-tag{
+.tags > p {
+    margin: 5px 0;
+    transition: color 0.3s ease;
+}
+
+.tags > p:hover {
+    color: #bc1434;
+}
+
+/* Link Tag Styles */
+.link-tag {
     display: flex;
-     align-content: center;
-    padding: 5px 0;
-    width: 100%
- }
+    align-items: center;
+    padding: 5px 10px;
+    width: 100%;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+}
 
- .link-tag:hover{
-    border-right: 5px solid #cc042b;
- }
+.link-tag:hover {
+    border-right: 5px solid #bc1434;
+    background-color: #e0e0e0; /* Add background color on hover for a better effect */
+}
 
- .link-tag > .MuiSvgIcon-root{
+.link-tag > .MuiSvgIcon-root {
     font-size: 18px;
     margin-right: 5px;
-    color: #cc042b;
- }
-
- .tags{
-    display: flex;
-    flex-direction: column;
-    color:#000;
-    margin: 0px 20px;
- }
- .tags>p{
-
-    margin: 5px 0;
- }
- .tags > p:hover{
-    color: #000;
- }
- 
+    color: #bc1434;
+}

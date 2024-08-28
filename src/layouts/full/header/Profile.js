@@ -114,62 +114,67 @@ const Profile = () => {
         />
       </IconButton>
       <Menu
-        id="msgs-menu"
-        anchorEl={anchorEl2}
-        keepMounted
-        open={Boolean(anchorEl2)}
-        onClose={handleClose2}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        sx={{
-          '& .MuiMenu-paper': {
-            width: '200px',
-          },
-        }}
-      >
-        <div>
-        {isAdmin  ? (
-            <MenuItem component={Link} to="/modifierprofile">
-              <ListItemIcon>
-                <IconUser width={20} />
-              </ListItemIcon>
-              <ListItemText>{username}</ListItemText>
-            </MenuItem>
-          ) : (
-            <MenuItem component={Link} to="/client/profile">
-              <ListItemIcon>
-                <IconUser width={20} />
-              </ListItemIcon>
-              <ListItemText>{username}</ListItemText>
-            </MenuItem>
-          )}
-        </div>
-        {!isAdmin  && (
-        <>
-          <MenuItem>
-            <ListItemIcon>
-              <IconMail width={20} />
-            </ListItemIcon>
-            <Link to="/client/Mesquestions" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <ListItemText>My Questions</ListItemText>
-            </Link>
-          </MenuItem>
-          <MenuItem>
-            <ListItemIcon>
-              <IconListCheck width={20} />
-            </ListItemIcon>
-            <Link to="/client/Mesanswers" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <ListItemText>My Answers</ListItemText>
-            </Link>
-          </MenuItem>
-        </>
-      )}
-        <Box mt={1} py={1} px={2}>
-          <Button to="/auth/login" variant="outlined" color="primary" component={Link} fullWidth onClick={cleanLocalStorage}>
-            Logout
-          </Button>
-        </Box>
-      </Menu>
+  id="msgs-menu"
+  anchorEl={anchorEl2}
+  keepMounted
+  open={Boolean(anchorEl2)}
+  onClose={handleClose2}
+  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+  sx={{
+    '& .MuiMenu-paper': {
+      width: '200px',
+    },
+  }}
+>
+  {isAdmin ? (
+    <MenuItem component={Link} to="/modifierprofile">
+      <ListItemIcon>
+        <IconUser width={20} />
+      </ListItemIcon>
+      <ListItemText>{username}</ListItemText>
+    </MenuItem>
+  ) : (
+    <MenuItem component={Link} to="/client/profile">
+      <ListItemIcon>
+        <IconUser width={20} />
+      </ListItemIcon>
+      <ListItemText>{username}</ListItemText>
+    </MenuItem>
+  )}
+
+  {!isAdmin && (
+    [
+      <MenuItem key="my-questions" component={Link} to="/client/Mesquestions">
+        <ListItemIcon>
+          <IconMail width={20} />
+        </ListItemIcon>
+        <ListItemText>My Questions</ListItemText>
+      </MenuItem>,
+      <MenuItem key="my-answers" component={Link} to="/client/Mesanswers">
+        <ListItemIcon>
+          <IconListCheck width={20} />
+        </ListItemIcon>
+        <ListItemText>My Answers</ListItemText>
+      </MenuItem>
+    ]
+  )}
+
+  <Box mt={1} py={1} px={2}>
+    <Button
+      to="/auth/login"
+      variant="outlined"
+      color="primary"
+      component={Link}
+      fullWidth
+      onClick={cleanLocalStorage}
+    >
+      Logout
+    </Button>
+  </Box>
+</Menu>
+
+
     </Box>
   );
 };

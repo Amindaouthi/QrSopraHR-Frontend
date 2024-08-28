@@ -57,49 +57,47 @@ const {t}=useTranslation();
 
   return (
     <div className="main" style={{ marginTop: '70px', width: 'auto' }}>
-      <div className="main-container">
-        <div className="main-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ margin: '0', marginRight: 'auto' ,marginLeft:"5px"}}>{t('allQ')}</h2>
-          <NavLink to="/client/askquestion">
-            <button className="btn" style={{ marginRight: '20px', backgroundColor: '#cf022b', color: '#fff' }}>
+    <div className="main-container">
+      <div className="main-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 style={{ margin: '0', marginRight: 'auto', marginLeft: '5px' }}>{t('allQ')}</h2>
+        <NavLink to="/client/askquestion">
+          <button className="btn" style={{ marginRight: '20px', backgroundColor: '#cf022b', color: '#fff' }}>
             {t('Ask Question')}
-            </button>
-          </NavLink>
-        </div>
-        <div className="main-desc">
-          <p style={{marginLeft:"5px"}}>Questions</p>
-          <div className="main-filter">
-            <div className="main-tabs">
-              <NavLink
-                className={`main-tab ${activeFilter === 'answered' ? 'active-tab' : ''}`}
-                style={activeFilter === 'answered' ? activeTabStyle : tabStyle}
-                onClick={() => handleFilterChange('answered')}
-                activeClassName="active-tab"
-              >
+          </button>
+        </NavLink>
+      </div>
+      <div className="main-desc">
+        <p style={{ marginLeft: '5px' }}>Questions</p>
+        <div className="main-filter">
+          <div className="main-tabs">
+            <NavLink
+              className={`main-tab ${activeFilter === 'answered' ? 'active-tab' : ''}`}
+              style={activeFilter === 'answered' ? activeTabStyle : tabStyle}
+              onClick={() => handleFilterChange('answered')}
+            >
               {t('Answered')}
-              </NavLink>
-              <NavLink
-                className={`main-tab ${activeFilter === 'votes' ? 'active-tab' : ''}`}
-                style={activeFilter === 'votes' ? activeTabStyle : tabStyle}
-                onClick={() => handleFilterChange('votes')}
-                activeClassName="active-tab"
-              >
-                votes
-              </NavLink>
-              <NavLink
-                className={`main-tab ${activeFilter === 'unanswered' ? 'active-tab' : ''}`}
-                style={activeFilter === 'unanswered' ? activeTabStyle : tabStyle}
-                onClick={() => handleFilterChange('unanswered')}
-                activeClassName="active-tab"
-              >
-               {t('Unanswered')}
-              </NavLink>
-            </div>
+            </NavLink>
+            <NavLink
+              className={`main-tab ${activeFilter === 'votes' ? 'active-tab' : ''}`}
+              style={activeFilter === 'votes' ? activeTabStyle : tabStyle}
+              onClick={() => handleFilterChange('votes')}
+            >
+              votes
+            </NavLink>
+            <NavLink
+              className={`main-tab ${activeFilter === 'unanswered' ? 'active-tab' : ''}`}
+              style={activeFilter === 'unanswered' ? activeTabStyle : tabStyle}
+              onClick={() => handleFilterChange('unanswered')}
+            >
+              {t('Unanswered')}
+            </NavLink>
           </div>
         </div>
-        <div></div>
       </div>
+      <div></div>
     </div>
+  </div>
+  
   );
 }
 

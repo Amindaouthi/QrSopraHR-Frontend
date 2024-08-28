@@ -6,6 +6,7 @@ import NewNavbar from './NewNavbar';
 import Sidebar from './sidebar';
 import { useLocation } from 'react-router-dom';
 import { SlBadge } from 'react-icons/sl'; // Import SlBadge icon
+import { useTranslation } from 'react-i18next';
 
 // Styled components
 const PageContainer = styled.div`
@@ -37,7 +38,7 @@ const ProfileIcon = styled.div`
   border-radius: 50%;
   overflow: hidden;
   margin-right: 20px;
-  
+
   img {
     width: 100%;
     height: 100%;
@@ -76,7 +77,7 @@ const BadgeSection = styled.div`
 
 const Badge = styled(SlBadge)`
   font-size: 50px;
-  color: ${props => props.active ? props.color : 'transparent'}; // Badge color based on status
+  color: ${(props) => (props.active ? props.color : 'transparent')}; // Badge color based on status
   transition: color 0.3s ease;
   margin-top: 5px;
   padding-bottom: 15px;
@@ -124,7 +125,6 @@ const HorizontalLine = styled.hr`
   border: 1px solid #1f1c1f;
 `;
 const H2 = styled.h2`
-  
   font-size: 2em; /* Adjust the size as needed */
   font-weight: bold;
   color: #333; /* Darker color for better readability */
@@ -162,6 +162,7 @@ const ChartComponent = () => {
   const [userName, setUserName] = useState('');
   const [userPoints, setUserPoints] = useState(0);
   const [userImage, setUserImage] = useState('');
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (id) {
@@ -178,8 +179,8 @@ const ChartComponent = () => {
             params: {
               userId: id,
               startDate: '2024-01-01',
-              endDate: '2024-12-31'
-            }
+              endDate: '2024-12-31',
+            },
           });
 
           const data = response.data;
@@ -188,15 +189,15 @@ const ChartComponent = () => {
           const answersCounts = Array(12).fill(0);
           const responsesCounts = Array(12).fill(0);
 
-          data.forEach(question => {
+          data.forEach((question) => {
             const questionMonth = new Date(question.createdAt).getMonth();
             questionsCounts[questionMonth] += 1;
 
-            question.answers.forEach(answer => {
+            question.answers.forEach((answer) => {
               const answerMonth = new Date(answer.createdAt).getMonth();
               answersCounts[answerMonth] += 1;
 
-              answer.responses.forEach(response => {
+              answer.responses.forEach((response) => {
                 const responseMonth = new Date(response.createdAt).getMonth();
                 responsesCounts[responseMonth] += 1;
               });
@@ -206,7 +207,6 @@ const ChartComponent = () => {
           setQuestionsData(questionsCounts);
           setAnswersData(answersCounts);
           setResponsesData(responsesCounts);
-
         } catch (error) {
           console.error('Error fetching data:', error);
         }
@@ -219,7 +219,7 @@ const ChartComponent = () => {
   // Define different colors for each chart
   const CHART_COLORS = {
     questions: '#007bff', // Blue
-    answers: '#28a745',   // Green
+    answers: '#28a745', // Green
     responses: '#dc3545', // Red
   };
 
@@ -237,7 +237,7 @@ const ChartComponent = () => {
     return {
       bronze: points >= 50,
       silver: points >= 100,
-      gold: points >= 150
+      gold: points >= 150,
     };
   };
 
@@ -251,42 +251,54 @@ const ChartComponent = () => {
         <MainContent>
           <ProfileSection>
             <ProfileIcon>
-              <img 
-                src={userImage ? `data:image/jpeg;base64,${userImage}` : 'https://bootdey.com/img/Content/avatar/avatar7.png'} 
+              <img
+                src={
+                  userImage
+                    ? `data:image/jpeg;base64,${userImage}`
+                    : 'https://bootdey.com/img/Content/avatar/avatar7.png'
+                }
                 alt="User Profile"
               />
             </ProfileIcon>
             <div>
               <UserInfo>
                 <UserInfoTitle>{userName}</UserInfoTitle>
-                <UserInfoDetail>User since: {formatDate('2024-01-01')}</UserInfoDetail>
+                <UserInfoDetail>
+                  {t('User since:')} {formatDate('2024-01-01')}
+                </UserInfoDetail>
                 <UserInfoDetail>Points: {userPoints}</UserInfoDetail>
               </UserInfo>
               <BadgeSection>
                 {badges.gold && <Badge as={SlBadge} color="#ffd700" active />}
                 {badges.silver && !badges.gold && <Badge as={SlBadge} color="#c0c0c0" active />}
-                {badges.bronze && !badges.silver && !badges.gold && <Badge as={SlBadge} color="#cd7f32" active />}
+                {badges.bronze && !badges.silver && !badges.gold && (
+                  <Badge as={SlBadge} color="#cd7f32" active />
+                )}
               </BadgeSection>
             </div>
           </ProfileSection>
           <HorizontalLine />
           <ChartsContainer>
-          <H2>{userName} States </H2>
+            <H2>
+              {userName} {t('States')}
+            </H2>
             <TopChartsRow>
               <ChartWrapper>
-                <ChartTitle>Total Questions by Month</ChartTitle>
-                <ChartSubtitle>Monthly distribution of questions</ChartSubtitle>
+                <ChartTitle>{t('Total Questions by Month')}</ChartTitle>
+                <ChartSubtitle>{t('Monthly distribution of questions')}</ChartSubtitle>
                 <ApexCharts
                   options={{
                     xaxis: {
-                      categories: Array.from({ length: 12 }, (_, i) => new Date(0, i).toLocaleString('en', { month: 'short' })),
+                      categories: Array.from({ length: 12 }, (_, i) =>
+                        new Date(0, i).toLocaleString('en', { month: 'short' }),
+                      ),
                     },
                     colors: [CHART_COLORS.questions],
                     dataLabels: {
-                      enabled: true
+                      enabled: true,
                     },
                     tooltip: {
-                      theme: 'dark'
+                      theme: 'dark',
                     },
                     responsive: [{ breakpoint: 480, options: { legend: { position: 'bottom' } } }],
                   }}
@@ -297,19 +309,21 @@ const ChartComponent = () => {
               </ChartWrapper>
 
               <ChartWrapper>
-                <ChartTitle>Total Answers by Month</ChartTitle>
-                <ChartSubtitle>Monthly distribution of answers</ChartSubtitle>
+              <ChartTitle>{t('Total Answers by Month')}</ChartTitle>
+              <ChartSubtitle>{t('Monthly distribution of answers')}</ChartSubtitle>
                 <ApexCharts
                   options={{
                     xaxis: {
-                      categories: Array.from({ length: 12 }, (_, i) => new Date(0, i).toLocaleString('en', { month: 'short' })),
+                      categories: Array.from({ length: 12 }, (_, i) =>
+                        new Date(0, i).toLocaleString('en', { month: 'short' }),
+                      ),
                     },
                     colors: [CHART_COLORS.answers],
                     dataLabels: {
-                      enabled: true
+                      enabled: true,
                     },
                     tooltip: {
-                      theme: 'dark'
+                      theme: 'dark',
                     },
                     responsive: [{ breakpoint: 480, options: { legend: { position: 'bottom' } } }],
                   }}
@@ -321,19 +335,21 @@ const ChartComponent = () => {
             </TopChartsRow>
 
             <ChartWrapper>
-              <ChartTitle>Total Responses by Month</ChartTitle>
-              <ChartSubtitle>Monthly distribution of responses</ChartSubtitle>
+            <ChartTitle>{t('Total Responses by Month')}</ChartTitle>
+            <ChartSubtitle>{t('Monthly distribution of responses')}</ChartSubtitle>
               <ApexCharts
                 options={{
                   xaxis: {
-                    categories: Array.from({ length: 12 }, (_, i) => new Date(0, i).toLocaleString('en', { month: 'short' })),
+                    categories: Array.from({ length: 12 }, (_, i) =>
+                      new Date(0, i).toLocaleString('en', { month: 'short' }),
+                    ),
                   },
                   colors: [CHART_COLORS.responses],
                   dataLabels: {
-                    enabled: true
+                    enabled: true,
                   },
                   tooltip: {
-                    theme: 'dark'
+                    theme: 'dark',
                   },
                   responsive: [{ breakpoint: 480, options: { legend: { position: 'bottom' } } }],
                 }}

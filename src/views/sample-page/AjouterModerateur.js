@@ -48,7 +48,7 @@ const AjouterModerateur = () => {
                 icon: 'success',
                 title: 'Ajout réussie !',
                 showConfirmButton: false,
-                timer: 1500
+                timer: 15000
             });
 
             setLoading(false);
@@ -56,7 +56,7 @@ const AjouterModerateur = () => {
         } catch (error) {
             setLoading(false);
             if (error.response && error.response.data.error) {
-                setErrors({ ...errors, username: 'Username or email already exists' });
+                setErrors({ ...errors, username: 'Le nom utilisateur ou adresse électronique existe déjà' });
             } else {
                 console.error('Erreur lors de lajout', error.response ? error.response.data : error.message);
             }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './sidebar.css';
-import { BsEscape, BsTagFill, BsStar, BsPerson, BsTag, BsQuestionCircle } from 'react-icons/bs';
+import { BsQuestionCircle, BsTag, BsPerson, BsStar } from 'react-icons/bs';
 import { useTranslation } from 'react-i18next';
 import { useLocation, Link } from 'react-router-dom';
 
@@ -40,7 +40,7 @@ const Sidebar = () => {
 
   const getLinkStyle = (path) => {
     return location.pathname === path
-      ? { backgroundColor: '#bc1434', color: '#bc1434', borderRadius: '10px' }
+      ? { backgroundColor: '#bc1434', color: '#fff', borderRadius: '10px' }
       : { color: '#000' };
   };
 
@@ -69,25 +69,41 @@ const Sidebar = () => {
           <hr />
           <ul className="nav nav-pills flex-column mb-auto pt-3">
             <li>
-              <Link to="/client/questionpage" className="nav-link link-dark" style={getLinkStyle('/client/questionpage')}>
+              <Link
+                to="/client/questionpage"
+                className={`nav-link link-dark ${location.pathname === '/client/questionpage' ? 'active' : ''}`}
+                style={getLinkStyle('/client/questionpage')}
+              >
                 <BsQuestionCircle className="me-2" style={{ fontSize: '1.5rem' }} />
                 {t('Question')}
               </Link>
             </li>
             <li>
-              <Link to="/client/tags" className="nav-link link-dark" style={getLinkStyle('/client/tags')}>
+              <Link
+                to="/client/tags"
+                className={`nav-link link-dark ${location.pathname === '/client/tags' ? 'active' : ''}`}
+                style={getLinkStyle('/client/tags')}
+              >
                 <BsTag className="me-2" style={{ fontSize: '1.5rem' }} />
                 {t('Tags')}
               </Link>
             </li>
             <li>
-              <Link to="/client/Customers" className="nav-link link-dark" style={getLinkStyle('/client/Customers')}>
+              <Link
+                to="/client/Customers"
+                className={`nav-link link-dark ${location.pathname === '/client/Customers' ? 'active' : ''}`}
+                style={getLinkStyle('/client/Customers')}
+              >
                 <BsPerson className="me-2" style={{ fontSize: '1.5rem' }} />
                 {t('Customers')}
               </Link>
             </li>
             <li>
-              <Link to="/client/MesQuestionsFavorits" className="nav-link link-dark" style={getLinkStyle('/client/MesQuestionsFavorits')}>
+              <Link
+                to="/client/MesQuestionsFavorits"
+                className={`nav-link link-dark ${location.pathname === '/client/MesQuestionsFavorits' ? 'active' : ''}`}
+                style={getLinkStyle('/client/MesQuestionsFavorits')}
+              >
                 <BsStar className="me-2" style={{ fontSize: '1.5rem' }} />
                 <span style={{ paddingTop: '6px' }}>{t('Favoris')}</span>
               </Link>

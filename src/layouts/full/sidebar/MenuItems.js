@@ -5,6 +5,8 @@ import {
 } from '@tabler/icons';
 import { IoIosPricetags } from "react-icons/io";
 import { BsQuestionOctagon } from "react-icons/bs";
+import { RiQuestionAnswerLine } from "react-icons/ri";
+
 import { IoPersonAdd } from "react-icons/io5";
 import { IoStatsChart } from "react-icons/io5";
 
@@ -17,26 +19,32 @@ import { uniqueId } from 'lodash';
 const Menuitems = [
   {
     navlabel: true,
-    subheader: 'Home',
+    subheader: 'Accueil',
   },
 
   {
     id: uniqueId(),
-    title: 'List of Users',
+    title: 'Liste des utilisateurs',
     icon: FaUsersLine,
     href: '/dashboard',
   },
   {
     id: uniqueId(),
-    title: 'Liste of Tags',
+    title: 'Liste des étiquettes',
     icon: IoIosPricetags,
     href: '/listoftags',
   },
   {
     id: uniqueId(),
-    title: 'Liste of Questions',
+    title: 'Liste de questions',
     icon: BsQuestionOctagon,
     href: '/listQuestions',
+  },
+  {
+    id: uniqueId(),
+    title: 'Liste des réponses',
+    icon: RiQuestionAnswerLine,
+    href: '/listAnswers',
   },
   {
     navlabel: true,
@@ -50,11 +58,11 @@ const Menuitems = [
   },
   {
     navlabel: true,
-    subheader: 'Analytics',
+    subheader: 'Analyse',
   },
   {
     id: uniqueId(),
-    title: 'Admin Stats',
+    title: 'statistiques de l application',
     icon: IoStatsChart,
     href: '/stat',
   },

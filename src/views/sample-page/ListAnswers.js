@@ -14,11 +14,9 @@ import {
 import DashboardCard from '../../components/shared/DashboardCard';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { useNavigate } from 'react-router';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-const ListQuestions = () => {
-  const navigate = useNavigate();
+const ListAnswers = () => {
   const [questions, setQuestions] = useState([]);
   const [filter, setFilter] = useState('');
   const [sortOrder, setSortOrder] = useState('asc'); // asc or desc
@@ -30,11 +28,11 @@ const ListQuestions = () => {
         setQuestions(response.data);
       })
       .catch((error) => {
-        console.error('Erreur lors du chargement des questions :', error);
+        console.error('Erreur lors du chargement des questions et réponses :', error);
       });
   }, []);
 
-  const handleDeleteQuestion = async (questionId) => {
+  const handleDeleteAnswer = async (answerId, questionId) => {
     try {
       const result = await Swal.fire({
         title: 'Êtes-vous sûr ?',
@@ -48,56 +46,72 @@ const ListQuestions = () => {
       });
 
       if (result.isConfirmed) {
-        await axios.delete(`http://localhost:8080/api/questions/${questionId}`);
+        // Delete the answer using a DELETE request (assuming you have an endpoint for this)
+        await axios.delete(`http://localhost:8080/api/questions/${questionId}/answers/${answerId}`);
 
         await Swal.fire({
           icon: 'success',
-          title: 'Question supprimée',
-          text: 'La question a été supprimée avec succès.',
+          title: 'Réponse supprimée',
+          text: 'La réponse a été supprimée avec succès.',
           confirmButtonText: 'OK'
         });
 
-        setQuestions((prevQuestions) => prevQuestions.filter((question) => question.id !== questionId));
+        // Update the state to remove the deleted answer
+        setQuestions((prevQuestions) =>
+          prevQuestions.map((question) =>
+            question.id === questionId
+              ? {
+                  ...question,
+                  answers: question.answers.filter((answer) => answer.id !== answerId),
+                }
+              : question
+          )
+        );
       }
     } catch (error) {
-      console.error("Erreur lors de la suppression de la question :", error);
+      console.error("Erreur lors de la suppression de la réponse :", error);
       await Swal.fire({
         icon: 'error',
         title: 'Erreur',
-        text: 'Une erreur est survenue lors de la suppression de la question. Veuillez réessayer.',
+        text: 'Une erreur est survenue lors de la suppression de la réponse. Veuillez réessayer.',
         confirmButtonText: 'OK'
       });
     }
   };
 
   const handleSort = () => {
-    const sortedQuestions = [...questions].sort((a, b) => {
-      if (sortOrder === 'asc') {
-        return a.title.localeCompare(b.title);
-      } else {
-        return b.title.localeCompare(a.title);
-      }
-    });
+    const sortedQuestions = [...questions].map((question) => ({
+      ...question,
+      answers: [...question.answers].sort((a, b) => {
+        if (sortOrder === 'asc') {
+          return a.content.localeCompare(b.content);
+        } else {
+          return b.content.localeCompare(a.content);
+        }
+      }),
+    }));
     setQuestions(sortedQuestions);
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
   };
 
-  const filteredQuestions = questions.filter((question) =>
-    question.title.toLowerCase().includes(filter.toLowerCase())
-  );
+  const filteredAnswers = questions
+    .flatMap((question) => question.answers.map((answer) => ({ ...answer, questionTitle: question.title })))
+    .filter((answer) =>
+      answer.content.toLowerCase().includes(filter.toLowerCase())
+    );
 
   return (
-    <DashboardCard title="Liste des questions">
+    <DashboardCard title="Liste des reponses">
       <Box sx={{ overflow: 'auto', width: { xs: '280px', sm: 'auto' } }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2,mt:"10px" }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, mt: "10px" }}>
           <TextField
-            label="Filter by title"
+            label="Filter by content"
             variant="outlined"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           />
           <Button variant="contained" onClick={handleSort}>
-            Sort by Title ({sortOrder === 'asc' ? 'Desc' : 'Asc'})
+            Sort by Content ({sortOrder === 'asc' ? 'Desc' : 'Asc'})
           </Button>
         </Box>
         <Table aria-label="simple table" sx={{ whiteSpace: 'nowrap', mt: 2 }}>
@@ -105,12 +119,7 @@ const ListQuestions = () => {
             <TableRow>
               <TableCell>
                 <Typography variant="subtitle2" fontWeight={600}>
-                  Question ID
-                </Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="subtitle2" fontWeight={600}>
-                  Title
+                  Answer ID
                 </Typography>
               </TableCell>
               <TableCell>
@@ -120,52 +129,46 @@ const ListQuestions = () => {
               </TableCell>
               <TableCell>
                 <Typography variant="subtitle2" fontWeight={600}>
-                  Username
+                  Question Title
                 </Typography>
               </TableCell>
               <TableCell>
                 <Typography variant="subtitle2" fontWeight={600}>
-                  Answers
+                  Username
                 </Typography>
               </TableCell>
-              <TableCell >
-              <Typography variant="subtitle2" fontWeight={600} style={{marginLeft :"87px"}}>
-                Supprimer
+              <TableCell align="right">
+                <Typography variant="subtitle2" fontWeight={600} style={{ marginLeft: "87px" }}>
+                  Supprimer
                 </Typography>
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredQuestions.map((question) => (
-              <TableRow key={question.id}>
+            {filteredAnswers.map((answer) => (
+              <TableRow key={answer.id}>
                 <TableCell>
                   <Typography variant="subtitle2" fontWeight={600}>
-                    {question.id}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="subtitle2" fontWeight={600}>
-                  {question.title.length > 10 ? `${question.title.substring(0, 10)}...` : question.title}
-
+                    {answer.id}
                   </Typography>
                 </TableCell>
                 <TableCell>
                   <Typography variant="subtitle2">
-                    {question.content.length > 16 ? `${question.content.substring(0, 16)}...` : question.content}
+                    {answer.content.length > 16 ? `${answer.content.substring(0, 16)}...` : answer.content}
                   </Typography>
                 </TableCell>
                 <TableCell>
                   <Typography variant="subtitle2">
-                    {question.username}
+                  {answer.questionTitle.length > 10 ? `${answer.questionTitle.substring(0, 10)}...` :answer.questionTitle}
                   </Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="subtitle2" style={{marginLeft:"20px"}}>
-                    {question.answers.length}
+                  <Typography variant="subtitle2">
+                    {answer.username}
                   </Typography>
                 </TableCell>
                 <TableCell align="right">
-                  <IconButton onClick={() => handleDeleteQuestion(question.id)}>
+                  <IconButton onClick={() => handleDeleteAnswer(answer.id, answer.questionId)}>
                     <DeleteIcon />
                   </IconButton>
                 </TableCell>
@@ -178,4 +181,4 @@ const ListQuestions = () => {
   );
 };
 
-export default ListQuestions;
+export default ListAnswers;

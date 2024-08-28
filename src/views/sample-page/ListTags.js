@@ -43,7 +43,7 @@ const ListTags = () => {
 
   return (
     <PageContainer title="List of Tags" description="List of Tags">
-      <DashboardCard title="List of Tags">
+      <DashboardCard title="Liste des étiquettes">
         <Box sx={{ overflow: 'auto', width: { xs: '280px', sm: 'auto' } }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2,mt:"10px" }}>
             <TextField

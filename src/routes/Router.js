@@ -5,7 +5,7 @@ import ResetPassword from 'src/views/authentication/ResetPassword';
 import AskPage from 'src/views/client/AskPage';
 import ProfilePage from 'src/views/client/ProfilePage';
 import QuestionsPageById from 'src/views/client/QuestionPageById';
-import { element } from 'prop-types';
+
 import QuestionsPage from 'src/views/client/homeComponents/QuestionsPage';
 import Tags from 'src/views/client/homeComponents/Tags';
 import AjouterModerateur from 'src/views/sample-page/AjouterModerateur';
@@ -18,10 +18,10 @@ import MesQuestions from 'src/views/client/homeComponents/Mesquestions';
 import MesQuestionsFavorites from 'src/views/client/MesQuestionsFavorits';
 import ChatBox from 'src/views/client/ChatBox';
 import ListQuestions from 'src/views/sample-page/ListQuestions';
-import SalesOverview from 'src/views/dashboard/components/Stat';
-import MonthlyEarnings from 'src/views/dashboard/components/MonthlyEarnings';
+
 import YearlyBreakup from 'src/views/dashboard/components/YearlyBreakup';
 import Stat from 'src/views/dashboard/components/Stat';
+import ListAnswers from 'src/views/sample-page/ListAnswers';
 
 /* ***Layouts**** */
 const FullLayout = Loadable(lazy(() => import('../layouts/full/FullLayout')));
@@ -54,10 +54,9 @@ const Router = [
       { path: '/modifierprofile', element: <ModifierProfile /> },
       { path: '/ajoutermoderateur', element: <AjouterModerateur /> },
       { path: '/listQuestions', exact: true, element: <ListQuestions /> },
-      { path: '/stat', exact: true, element: <Stat /> },
-      
-      
+      { path: '/listAnswers', exact: true, element: <ListAnswers /> },
 
+      { path: '/stat', exact: true, element: <Stat /> },
 
       { path: '*', element: <Navigate to="/auth/404" /> },
     ],
@@ -93,7 +92,7 @@ const Router = [
       { path: '/client/MesQuestionsFavorits', element: <MesQuestionsFavorites /> },
       { path: '/client/user', element: <ChartComponent /> },
       { path: '/client/chatbox', element: <ChatBox /> },
-      {path: '/client/YearlyBreakup' ,element : <YearlyBreakup />}
+      { path: '/client/YearlyBreakup', element: <YearlyBreakup /> },
     ],
   },
 ];

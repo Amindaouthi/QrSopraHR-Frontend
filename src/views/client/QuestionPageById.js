@@ -5,7 +5,7 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import { faUser, faCalendar, faThumbsUp, faThumbsDown } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
-
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import './QuestionPageById.css';
 import NewNavbar from './homeComponents/NewNavbar';
@@ -111,6 +111,7 @@ const CheckmarkIcon = styled(IoIosCheckmarkCircleOutline)`
   margin-top: 10px;
 `;
 function QuestionsPageById() {
+  const { t } = useTranslation();
   const [question, setQuestion] = useState(null);
   const [answer, setAnswer] = useState('');
   const [answers, setAnswers] = useState([]);
@@ -322,11 +323,40 @@ function QuestionsPageById() {
       const response = await axios.post(`http://localhost:8080/api/votes/Answer/${id}`, null, {
         params: { userId, value },
       });
-      console.log(response.data);
-      setVoteValue1(value);
-      fetchVote(); // Récupère les votes mis à jour
+      console.log('Vote response:', response.data);
+
+      // Display SweetAlert notification
+      const voteType = value === 1 ? 'Upvoted' : 'Downvoted';
+      Swal.fire({
+        title: t('You {{voteType}} this answer!', { voteType }),
+        text: t('The current vote count is {{updatedVotes}}.', {
+          updatedVotes: response.data.updatedVotes,
+        }),
+        icon: 'success',
+        confirmButtonText: t('OK'),
+      });
+
+      // Update the answers state to reflect the new vote status
+      setAnswers((prevAnswers) =>
+        prevAnswers.map((answer) =>
+          answer.id === id
+            ? {
+                ...answer,
+                votes: response.data.updatedVotes, // Correctly use updatedVotes from the backend
+                userVote: response.data.userVote, // Updated user vote (null if removed)
+              }
+            : answer,
+        ),
+      );
     } catch (error) {
       console.error('There was an error!', error);
+      Swal.fire({
+        title: t('Error!'),
+        text: t('Something went wrong with your vote. Please try again.'),
+        icon: 'error',
+        confirmButtonText: t('OK'),
+      });
+      refreshPage();
     }
   };
 
@@ -368,8 +398,8 @@ function QuestionsPageById() {
 
       if (userId !== questionCreatorId) {
         Swal.fire(
-          'Sorry',
-          'Only the user who created the question can mark an answer as accepted',
+          t('Sorry'),
+          t('Only the user who created the question can mark an answer as accepted'),
           'error',
         );
         return;
@@ -387,7 +417,7 @@ function QuestionsPageById() {
         );
 
         if (response.status === 200) {
-          Swal.fire('Answer marked as correct', '', 'success');
+          Swal.fire(t('Answer marked as correct'), '', 'success');
 
           setAnswers((prevAnswers) =>
             prevAnswers.map((answer) =>
@@ -415,8 +445,8 @@ function QuestionsPageById() {
 
       if (userId !== questionCreatorId) {
         Swal.fire(
-          'Sorry',
-          'Only the user who created the question can unmark an answer as accepted',
+          t('Sorry'),
+          t('Only the user who created the question can unmark an answer as accepted'),
           'error',
         );
         return;
@@ -434,7 +464,7 @@ function QuestionsPageById() {
         );
 
         if (response.status === 200) {
-          Swal.fire('Answer unmarked as correct', '', 'success');
+          Swal.fire(t('Answer unmarked as correct'), '', 'success');
 
           setAnswers((prevAnswers) =>
             prevAnswers.map((answer) =>
@@ -472,13 +502,13 @@ function QuestionsPageById() {
 
   const handleTrashClick = async (questionId, answerId) => {
     const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
+      title: t('Are you sure?'),
+      text: t("You won't be able to revert this!"),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!',
+      confirmButtonText: t('Yes, delete it!'),
     });
 
     if (result.isConfirmed) {
@@ -492,23 +522,23 @@ function QuestionsPageById() {
           },
         );
 
-        Swal.fire('Deleted!', 'The answer has been deleted.', 'success');
+        Swal.fire(t('Deleted!'), t('The answer has been deleted.'), 'success');
         refreshPage();
       } catch (error) {
-        Swal.fire('Error!', 'There was an error deleting your answer.', 'error');
+        Swal.fire(t('Error!'), t('There was an error deleting your answer.'), 'error');
       }
     }
   };
 
   const handleTrashClickForResponse = async (questionId, parentAnswerId, responseId) => {
     const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
+      title: t('Are you sure?'),
+      text: t("You won't be able to revert this!"),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!',
+      confirmButtonText: t('Yes, delete it!'),
     });
 
     if (result.isConfirmed) {
@@ -522,10 +552,10 @@ function QuestionsPageById() {
           },
         );
 
-        Swal.fire('Deleted!', 'The reply has been deleted.', 'success');
+        Swal.fire(t('Deleted!'), t('The reply has been deleted.'), 'success');
         refreshPage();
       } catch (error) {
-        Swal.fire('Error!', 'There was an error deleting your reply.', 'error');
+        Swal.fire(t('Error!'), t('There was an error deleting your reply.'), 'error');
       }
     }
   };
@@ -547,7 +577,7 @@ function QuestionsPageById() {
                         <span className="author" style={{ marginLeft: '20px' }}>
                           <i className="fas fa-user" />{' '}
                         </span>
-                        {question && question.file && (
+                        {question.file && (
                           <div
                             className="file"
                             style={{
@@ -557,6 +587,7 @@ function QuestionsPageById() {
                               marginTop: '50px',
                             }}
                           >
+                            {/* Display file based on content type */}
                             {question.contentType === 'application/pdf' && (
                               <embed
                                 src={`data:application/pdf;base64,${question.file}`}
@@ -566,6 +597,7 @@ function QuestionsPageById() {
                               />
                             )}
 
+                            {/* Handling PNG files */}
                             {question.contentType === 'image/png' && (
                               <embed
                                 src={`data:image/png;base64,${question.file}`}
@@ -577,6 +609,8 @@ function QuestionsPageById() {
                                 }
                               />
                             )}
+
+                            {/* Handling JPEG files */}
                             {question.contentType === 'image/jpeg' && (
                               <embed
                                 src={`data:image/jpeg;base64,${question.file}`}
@@ -588,6 +622,8 @@ function QuestionsPageById() {
                                 }
                               />
                             )}
+
+                            {/* Handling CSV files */}
                             {question.contentType === 'text/csv' && (
                               <embed
                                 src={`data:text/csv;base64,${question.file}`}
@@ -598,12 +634,15 @@ function QuestionsPageById() {
                             )}
                           </div>
                         )}
+
+                        {/* Full-screen image handling */}
                         {isFullScreen && (
                           <div className="overlay" onClick={closeFullScreen}>
                             <img src={fullScreenSrc} alt="Full screen" />
                           </div>
                         )}
 
+                        {/* Vote handling for the question */}
                         <p className="blog-meta">
                           <span>
                             <FontAwesomeIcon
@@ -615,11 +654,7 @@ function QuestionsPageById() {
                               }}
                               disabled={voteValue === 1}
                             />
-                            {totalVote >= 1 ? (
-                              <span className="mx-4"> {totalVote} </span>
-                            ) : (
-                              <span className="mx-4">0</span>
-                            )}
+                            <span className="mx-4">{totalVote >= 1 ? totalVote : 0}</span>
                             <FontAwesomeIcon
                               icon={faThumbsDown}
                               onClick={() => handleVote(0)}
@@ -630,6 +665,7 @@ function QuestionsPageById() {
                               disabled={voteValue === 0}
                             />
                           </span>
+
                           <span className="author">
                             <FontAwesomeIcon
                               icon="user"
@@ -637,15 +673,17 @@ function QuestionsPageById() {
                             />{' '}
                             {question.userAnonymous ? 'Anonyme' : question.username}
                           </span>
+
                           <span className="date">
                             <FontAwesomeIcon icon="calendar" style={{ marginRight: '5px' }} />
                             {new Date(question.createdAt).toLocaleDateString()}
                           </span>
+
                           <span>
-                            Mis à jour le :{' '}
+                            {t('Updated on:')}{' '}
                             {question.updatedAt
                               ? new Date(question.updatedAt).toLocaleString()
-                              : 'Pas encore mis à jour'}
+                              : t('Not updated yet')}
                           </span>
                         </p>
                       </p>
@@ -653,7 +691,7 @@ function QuestionsPageById() {
                       <h2 className="title">{question.title}</h2>
                       <p className="content">{question.content}</p>
                       <div className="tags">
-                        <p className="tag">Tags :</p>
+                      <p className="tag">{t('Tags:')}</p>
                         <div className="tag-container">
                           {question.tags &&
                             question.tags.map((tag, index) => (
@@ -666,7 +704,7 @@ function QuestionsPageById() {
 
                       <div className="comments-list-wrap">
                         <h3 className="comment-count-title">
-                          {question.answers && question.answers.length} response :
+                        {question.answers && question.answers.length} {t('response')} :
                         </h3>
 
                         <div className="comment-list">
@@ -685,7 +723,7 @@ function QuestionsPageById() {
                                       </div>
                                       <span style={{ marginLeft: '45px' }}>{answer.username}</span>
                                       <span className="comment-date" style={{ marginLeft: '5px' }}>
-                                        A répondu le{' '}
+                                      <p>{t('Answered on')} {' '} <span>{/* Add date or other relevant info here */}</span></p>
                                         {new Date(answer.createdAt).toLocaleDateString()}
                                       </span>{' '}
                                       <button
@@ -697,7 +735,7 @@ function QuestionsPageById() {
                                           handleReplyClick2(answer.id);
                                         }}
                                       >
-                                        reply
+                                        {t('reply')}
                                       </button>
                                     </h4>
                                     <Cader
@@ -718,6 +756,8 @@ function QuestionsPageById() {
                                       >
                                         {answer.content}
                                       </p>
+
+                                      {/* Answer file handling */}
                                       {answer.file && (
                                         <div style={{ marginTop: '20px', textAlign: 'center' }}>
                                           {answer.contentType ? (
@@ -772,16 +812,18 @@ function QuestionsPageById() {
                                               />
                                             ) : (
                                               <p style={{ color: '#e74c3c', fontSize: '16px' }}>
-                                                Unsupported file type
+                                                <p>{t('Unsupported file type')}</p>
                                               </p>
                                             )
                                           ) : (
                                             <p style={{ color: '#e74c3c', fontSize: '16px' }}>
-                                              File type information is missing
+                                              <p>{t('File type information is missing')}</p>
                                             </p>
                                           )}
                                         </div>
                                       )}
+
+                                      {/* Handling correct/accepted answers */}
                                       {answer.accepted ? (
                                         <div
                                           onClick={() => handleUnacceptAnswer(answer.id)}
@@ -793,7 +835,7 @@ function QuestionsPageById() {
                                         >
                                           <CorrectAnswerLabel>
                                             <IoIosCheckmarkCircleOutline />
-                                            Correct Answer
+                                            {t('Correct Answer')}
                                           </CorrectAnswerLabel>
                                         </div>
                                       ) : (
@@ -802,6 +844,8 @@ function QuestionsPageById() {
                                           onClick={() => handleAcceptAnswer(answer.id)}
                                         />
                                       )}
+
+                                      {/* Moderator actions */}
                                       {isModerator && (
                                         <div style={{ marginTop: '10px' }}>
                                           <FontAwesomeIcon
@@ -813,41 +857,37 @@ function QuestionsPageById() {
                                       )}
                                     </Cader>
 
-                                    <span>
+                                    {/* Voting for answers */}
+                                    <span key={answer.id}>
                                       <FontAwesomeIcon
                                         icon={faThumbsUp}
                                         onClick={() => handleVote1(1, answer.id)}
                                         style={{
-                                          cursor: voteValue1 === 1 ? 'default' : 'pointer',
-                                          color: voteValue1 === 1 ? 'green' : 'black',
+                                          cursor: answer.userVote === 1 ? 'default' : 'pointer',
+                                          color: answer.userVote === 1 ? 'green' : 'black',
                                         }}
-                                        disabled={voteValue1 === 1}
+                                        disabled={answer.userVote === 1}
                                       />
 
-                                      <span className="mx-4">{answer.votes.length}</span>
+                                      {/* Display the updated vote count */}
+                                      <span className="mx-4">
+                                        {answer.votes.length !== undefined
+                                          ? answer.votes.length
+                                          : 0}
+                                      </span>
 
                                       <FontAwesomeIcon
                                         icon={faThumbsDown}
                                         onClick={() => handleVote1(0, answer.id)}
                                         style={{
-                                          cursor: voteValue1 === 0 ? 'default' : 'pointer',
-                                          color: voteValue1 === 0 ? 'red' : 'black',
+                                          cursor: answer.userVote === 0 ? 'default' : 'pointer',
+                                          color: answer.userVote === 0 ? 'red' : 'black',
                                         }}
-                                        disabled={voteValue1 === 0}
+                                        disabled={answer.userVote === 0}
                                       />
                                     </span>
 
-                                    {answer.filePath && (
-                                      <div>
-                                        <h4>Fichier attaché :</h4>
-                                        <img
-                                          src={answer.filePath}
-                                          alt="Attachment"
-                                          style={{ maxWidth: '200px', cursor: 'pointer' }}
-                                          onClick={() => handleImageClick(answer.filePath)}
-                                        />
-                                      </div>
-                                    )}
+                                    {/* Reply form for each answer */}
                                     {replyToId === answer.id && (
                                       <form
                                         ref={replyFormRef}
@@ -866,10 +906,12 @@ function QuestionsPageById() {
                                           className="btn btn-danger btn-sm"
                                           style={{ marginTop: '5px', marginBottom: '10px' }}
                                         >
-                                          Submit
+                                          {t('Submit')}
                                         </button>
                                       </form>
                                     )}
+
+                                    {/* Displaying replies */}
                                     <div>
                                       {answer.responses.length > 0 && (
                                         <div style={{ marginLeft: '20px', marginTop: '20px' }}>
@@ -880,7 +922,7 @@ function QuestionsPageById() {
                                               color: '#333',
                                             }}
                                           >
-                                            Replies:
+                                            {t('Replies:')}
                                           </h5>
                                           {answer.responses.map((response) => (
                                             <Comment
@@ -946,11 +988,11 @@ function QuestionsPageById() {
                               </React.Fragment>
                             ))}
 
+                          {/* Handling submission of new answers */}
                           {isAccepted ? (
                             <div>
                               <p>
-                                Apologies, but with your effort ❤ , we found the best answer. The
-                                question is now closed.
+                              {t('Apologies, but with your effort ❤ , we found the best answer. The question is now closed.')}
                               </p>
                             </div>
                           ) : (
@@ -959,7 +1001,7 @@ function QuestionsPageById() {
                                 <textarea
                                   value={answer}
                                   onChange={(e) => setAnswer(e.target.value)}
-                                  placeholder="Your answer"
+                                  placeholder={t('Your answer')}
                                   cols="30"
                                   rows="3"
                                   style={{
@@ -1011,7 +1053,7 @@ function QuestionsPageById() {
                               </div>
                               {filePreview && (
                                 <div>
-                                  <h4>Preview :</h4>
+                                  <h4>{t('Preview')}:</h4>
                                   <img
                                     src={filePreview}
                                     alt="Preview"
@@ -1030,7 +1072,7 @@ function QuestionsPageById() {
                                 }}
                                 type="submit"
                               >
-                                Post your answer
+                                {t('Post your answer')}
                               </button>
                             </form>
                           )}

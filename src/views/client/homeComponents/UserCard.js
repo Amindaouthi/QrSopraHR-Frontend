@@ -3,6 +3,7 @@ import '../homeComponents/UserCard.css';
 import { useNavigate } from 'react-router-dom';
 import { IoIosChatbubbles } from 'react-icons/io';
 import styled from 'styled-components';
+import { useTranslation } from 'react-i18next';
 
 
 const Card = styled.div`
@@ -77,6 +78,7 @@ const ChatIconContainer = styled.div`
 
 const UserCard = ({ id, username, email, reputation, imageBase64, onChatClick }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleClick = () => {
     navigate(`/client/user?id=${id}`);
@@ -96,7 +98,7 @@ const UserCard = ({ id, username, email, reputation, imageBase64, onChatClick })
       <UserInfo>
         <Username>{username}</Username>
         <Email>{email}</Email>
-        <Score>Score: {reputation?.score !== undefined ? reputation.score : 'No Score'}</Score>
+        {t('Score')}: {reputation?.score !== undefined ? reputation.score : t('No Score')}
         <ChatIconContainer onClick={() => onChatClick(id, username)}>
           <IoIosChatbubbles />
         </ChatIconContainer>

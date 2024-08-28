@@ -161,7 +161,7 @@ const ListUsers = () => {
   );
 
   return (
-    <DashboardCard title="User List">
+    <DashboardCard title="Liste des utilisateurs">
       <Box sx={{ overflow: 'auto', width: { xs: '280px', sm: 'auto' } }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, mt: '10px' }}>
           <TextField
@@ -257,26 +257,29 @@ const ListUsers = () => {
                   </Typography>
                 </TableCell>
                 <TableCell>
-                  <Select
-                    value={user.roles[0] || 'ROLE_USER'}
-                    onChange={(e) => handleRoleClick(user.matricul, user.roles[0], e.target.value)} // Call handleRoleClick with current and new roles
-                    displayEmpty
-                    inputProps={{ 'aria-label': 'Without label' }}
-                  >
-                    <MenuItem value={user.roles[0]} disabled>
-                      {user.roles[0].replace('ROLE_', '')}
-                    </MenuItem>
-                    {user.roles[0] !== 'ROLE_USER' && (
-                      <MenuItem value="ROLE_USER">USER</MenuItem>
-                    )}
-                    {user.roles[0] !== 'ROLE_MODERATOR' && (
-                      <MenuItem value="ROLE_MODERATOR">MODERATOR</MenuItem>
-                    )}
-                    {user.roles[0] !== 'ROLE_ADMIN' && (
-                      <MenuItem value="ROLE_ADMIN">ADMIN</MenuItem>
-                    )}
-                  </Select>
-                </TableCell>
+  <Select
+    value={user.roles[0] || 'ROLE_USER'} // Ensure a default value is provided
+    onChange={(e) => handleRoleClick(user.matricul, user.roles[0], e.target.value)}
+    displayEmpty
+    inputProps={{ 'aria-label': 'Without label' }}
+  >
+    {user.roles[0] && (
+      <MenuItem value={user.roles[0]} disabled>
+        {user.roles[0].replace('ROLE_', '')}
+      </MenuItem>
+    )}
+    {user.roles[0] !== 'ROLE_USER' && (
+      <MenuItem value="ROLE_USER">USER</MenuItem>
+    )}
+    {user.roles[0] !== 'ROLE_MODERATOR' && (
+      <MenuItem value="ROLE_MODERATOR">MODERATOR</MenuItem>
+    )}
+    {user.roles[0] !== 'ROLE_ADMIN' && (
+      <MenuItem value="ROLE_ADMIN">ADMIN</MenuItem>
+    )}
+  </Select>
+</TableCell>
+
                 <TableCell align="right">
                   <IconButton onClick={() => handleDeleteUser(user.matricul)}>
                     <DeleteIcon />
@@ -287,7 +290,7 @@ const ListUsers = () => {
           </TableBody>
         </Table>
         <Typography variant="body2" sx={{ mt: 3 }}>
-          You can change the role by selecting a new role from the dropdown.
+        Vous pouvez modifier le rôle en sélectionnant un nouveau rôle dans la liste déroulante.
         </Typography>
       </Box>
     </DashboardCard>

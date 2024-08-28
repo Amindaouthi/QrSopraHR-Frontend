@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
-
+import { useTranslation } from 'react-i18next';
 import Sidebar from './sidebar';
 import NewNavbar from './NewNavbar';
 
@@ -98,6 +98,7 @@ const AnswersPage = () => {
   const [selectedAnswer, setSelectedAnswer] = useState({ id: null, content: '' });
   const [startDate, setStartDate] = useState('2024-01-01');
   const [endDate, setEndDate] = useState('2024-12-31');
+  const {t} =useTranslation();
   const navigate = useNavigate();
 
   const fetchAnswers = async () => {
@@ -136,7 +137,7 @@ const AnswersPage = () => {
     }
 
     const { value: formData } = await MySwal.fire({
-      title: 'Edit Answer',
+      title: t('Edit Answer'),
       html: `
             <textarea id="swal-textarea" style="width: 100%; min-height: 100px;">${
               selected.content || ''
@@ -146,14 +147,14 @@ const AnswersPage = () => {
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Save Changes',
+      confirmButtonText: t('Save Changes'),
       preConfirm: () => {
         const content = document.querySelector('#swal-textarea').value;
         const fileInput = document.querySelector('#swal-file');
         const file = fileInput.files[0];
 
         if (!content && !file) {
-          MySwal.showValidationMessage('Content or file must be provided');
+          MySwal.showValidationMessage(t('Content or file must be provided'));
         }
         return { content, file };
       },
@@ -182,17 +183,17 @@ const AnswersPage = () => {
           },
         );
         MySwal.fire({
-          title: 'Updated!',
-          text: 'Your answer has been updated.',
-          icon: 'success',
+          title: t('Updated!'),
+          text: t('Your answer has been updated.'),
+          icon: 'success'
         });
         fetchAnswers(); // Refresh answers
       } catch (error) {
         console.error('Error updating answer:', error);
         MySwal.fire({
-          title: 'Error!',
-          text: 'Failed to update answer.',
-          icon: 'error',
+          title: t('Error!'),
+          text: t('Failed to update answer.'),
+          icon: 'error'
         });
       }
     }
@@ -205,13 +206,13 @@ const AnswersPage = () => {
     }
 
     MySwal.fire({
-      title: 'Are you sure?',
-      text: 'You will not be able to recover this answer!',
+      title: t('Are you sure?'),
+      text: t('You will not be able to recover this answer!'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!',
+      confirmButtonText: t('Yes, delete it!')
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
@@ -225,16 +226,16 @@ const AnswersPage = () => {
           );
           setAnswers(answers.filter((answer) => answer.id !== answerId));
           MySwal.fire({
-            title: 'Deleted!',
-            text: 'Your answer has been deleted.',
-            icon: 'success',
+            title: t('Deleted!'),
+            text: t('Your answer has been deleted.'),
+            icon: 'success'
           });
         } catch (error) {
           console.error('Error deleting answer:', error);
           MySwal.fire({
-            title: 'Error!',
-            text: 'Failed to delete answer.',
-            icon: 'error',
+            title: t('Error!'),
+            text: t('Failed to delete answer.'),
+            icon: 'error'
           });
         }
       }
@@ -265,11 +266,11 @@ const AnswersPage = () => {
         <Sidebar className="h-100" />
 
         <div style={{ flex: 1 }}>
-          <H2>My Response</H2>
+        <H2>{t('My Response')}</H2>
           <div style={{ padding: '20px', marginTop: '10px' }}>
             <DateInputsContainer style={{ marginLeft: '25%' }}>
               <div>
-                <label htmlFor="startDate">Date de début :</label>
+              <label htmlFor="startDate">{t('Start Date:')}</label>
                 <input
                   type="date"
                   id="startDate"
@@ -278,11 +279,11 @@ const AnswersPage = () => {
                 />
               </div>
               <div>
-                <label htmlFor="endDate">Date de fin :</label>
+              <label htmlFor="endDate">{t('End Date:')}</label>
                 <input type="date" id="endDate" value={endDate} onChange={handleEndDateChange} />
               </div>
             </DateInputsContainer>
-            <p>Total des réponses : {answers.length}</p>
+            <p>{t('Total responses')}: {answers.length}</p>
             {sortedAnswers.map((answer, index) => (
               <StyledAnswerRow key={index} onClick={() => handleAnswerClick(answer.questionId)}>
                 <EditDeleteIcons>
@@ -306,7 +307,7 @@ const AnswersPage = () => {
                 </AnswerStat>
                 <AnswerTitleArea>
                   <AnswerLink>{answer.content || 'No content'}</AnswerLink>
-                  <WhoAndWhen>répondue le {formatDate(answer.createdAt)}</WhoAndWhen>
+                  <WhoAndWhen>{t('Answered on')} {formatDate(answer.createdAt)}</WhoAndWhen>
                 </AnswerTitleArea>
               </StyledAnswerRow>
             ))}

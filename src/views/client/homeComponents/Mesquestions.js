@@ -8,6 +8,7 @@ import Swal from 'sweetalert2';  // Import SweetAlert
 import Sidebar from './sidebar';
 import NewNavbar from './NewNavbar';
 import Header2 from './Header2';
+import { useTranslation } from 'react-i18next';
 
 const QuestionStat = styled.div`
   text-align: center;
@@ -109,6 +110,7 @@ const MesQuestions = () => {
   const [startDate, setStartDate] = useState('2024-01-01');
   const [endDate, setEndDate] = useState('2024-12-31');
   const navigate = useNavigate();
+  const {t} =useTranslation();
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -145,13 +147,13 @@ const MesQuestions = () => {
 
   const handleDeleteClick = async (questionId) => {
     Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
+      title: t('Are you sure?'),
+      text: t("You won't be able to revert this!"),
+      icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!"
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: t('Yes, delete it!')
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
@@ -162,17 +164,17 @@ const MesQuestions = () => {
           });
           setQuestions(questions.filter(question => question.id !== questionId));
           Swal.fire({
-            title: "Deleted!",
-            text: "Your file has been deleted.",
-            icon: "success"
+            title: t('Deleted!'),
+            text: t('Your file has been deleted.'),
+            icon: 'success'
           });
           console.log('Question deleted successfully:', response.data);
         } catch (error) {
           console.error('Error deleting question:', error);
           Swal.fire({
-            title: "Error",
-            text: "An error occurred while deleting the question. Please try again later.",
-            icon: "error"
+            title: t('Error'),
+            text: t('An error occurred while deleting the question. Please try again later.'),
+            icon: 'error'
           });
         }
       }
@@ -206,11 +208,11 @@ const MesQuestions = () => {
       <div style={{ display: 'flex' }}>
         <Sidebar className='h-100' />
         <div style={{ flex: 1 }}>
-        <H2>my questions </H2>
+        <H2>{t('My questions')}</H2>
           <div style={{ padding: '20px' ,marginTop:"10px"}}>
             <DateInputsContainer style={{ marginLeft: "25%" }}> 
               <div>
-                <label htmlFor="startDate">Date de début :</label>
+              <label htmlFor="startDate">{t('Start Date:')}</label>
                 <input
                   type="date"
                   id="startDate"
@@ -219,7 +221,7 @@ const MesQuestions = () => {
                 />
               </div>
               <div>
-                <label htmlFor="endDate">Date de fin :</label>
+              <label htmlFor="endDate">{t('End Date:')}</label>
                 <input
                   type="date"
                   id="endDate"
@@ -228,7 +230,7 @@ const MesQuestions = () => {
                 />
               </div>
             </DateInputsContainer >
-            <p>Total des questions : {questions.length}</p>
+            <p>{t('Total questions')}: {questions.length}</p>
             {sortedQuestions.map((question, index) => (
               <StyledQuestionRow key={index} onClick={() => handleQuestionClick(question.id)}>
                 <EditDeleteIcons>
@@ -237,15 +239,15 @@ const MesQuestions = () => {
                 </EditDeleteIcons>
                 <QuestionStat>
                   {question.votes ? question.votes.length : 0}
-                  <span>votes</span>
+                  <span>{t('votes')}</span>
                 </QuestionStat>
                 <QuestionStat>
                   {question.answers ? question.answers.length : 0}
-                  <span>answers</span>
+                  <span>{t('answers')}</span>
                 </QuestionStat>
                 <QuestionStat>
                   {typeof question.views === 'number' ? question.views : 0}
-                  <span>views</span>
+                  <span>{t('views')}</span>
                 </QuestionStat>
                 <QuestionTitleArea>
                   <QuestionLink to={`/questions/${question.id}`}>
@@ -258,7 +260,7 @@ const MesQuestions = () => {
                     ))}
                   </div>
                   <WhoAndWhen>
-                    asked {formatDate(question.createdAt)}
+                    {t('asked')} {formatDate(question.createdAt)}
                   </WhoAndWhen>
                 </QuestionTitleArea>
               </StyledQuestionRow>

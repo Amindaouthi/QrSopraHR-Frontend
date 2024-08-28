@@ -8,6 +8,8 @@ import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
+import { t } from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 const QuestionStat = styled.div`
   text-align: center;
@@ -82,7 +84,7 @@ const H2 = styled.h2`
   margin-top: 10%;
   font-size: 2em; /* Adjust the size as needed */
   font-weight: bold;
-  color: #333; /* Darker color for better readability */
+  color: #666666; /* Darker color for better readability */
   text-align: center; /* Center the heading */
   font-family: 'Arial', sans-serif; /* Change the font family as needed */
   text-transform: uppercase; /* Optional: Transform text to uppercase */
@@ -100,6 +102,8 @@ const MesQuestionsFavorites = () => {
   const userData = JSON.parse(localStorage.getItem('user'));
   const userId = userData?.id;
   const token = localStorage.getItem('token');
+  const {t} = useTranslation();
+
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -133,10 +137,10 @@ const MesQuestionsFavorites = () => {
           },
         });
         if (response.status === 200) {
-          Swal.fire('Question retiré des favoris', '', 'success');
+          Swal.fire(t('Question removed from favorites'), '', 'success');
           setQuestions(questions.filter((q) => q.id !== questionId));
         } else {
-          Swal.fire('Erreur dans la suppression', '', 'error');
+          Swal.fire(t('Error in deletion'), '', 'error');
         }
       }
     } catch (error) {
@@ -152,22 +156,22 @@ const MesQuestionsFavorites = () => {
       <div style={{ display: 'flex' }}>
         <Sidebar className='h-100' />
         <div style={{ flex: 1 }}>
-          <H2>My Favorite Question </H2>
+          <H2>{t('My Favorite Question')} </H2>
         <div style={{ padding: '20px' ,marginTop:"60px"}}>
-          <p className='ms-2'>Total des questions Favoris : {questions.length}</p>
+          <p className='ms-2'>{t('Total favorite questions')} : {questions.length}</p>
           {sortedQuestions.map((question, index) => (
             <StyledQuestionRow key={index}>
               <QuestionStat>
                 {question.votes ? question.votes.length : 0}
-                <span>votes</span>
+                <span>{t('votes')}</span>
               </QuestionStat>
               <QuestionStat>
                 {question.answers ? question.answers.length : 0}
-                <span>answers</span>
+                <span>{t('answers')}</span>
               </QuestionStat>
               <QuestionStat>
                 {typeof question.views === 'number' ? question.views : 0}
-                <span>views</span>
+                <span>{t('views')}</span>
               </QuestionStat>
               <QuestionTitleArea>
                 <QuestionLink to={`/client/question/${question.id}`}>
@@ -181,7 +185,7 @@ const MesQuestionsFavorites = () => {
                   ))}
                 </div>
                 <WhoAndWhen>
-                  added {formatDate(question.createdAt)}
+                  {t('added')} {formatDate(question.createdAt)}
                 </WhoAndWhen>
               </QuestionTitleArea>
               <FavoriteIcon

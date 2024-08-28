@@ -7,8 +7,8 @@ import { Link } from 'react-router-dom';
 import NewNavbar from './homeComponents/NewNavbar';
 import './UserProfile.css';
 import { createGlobalStyle } from 'styled-components';
-import { MdOutlineInsertPhoto } from "react-icons/md";
- 
+import { MdOutlineInsertPhoto } from 'react-icons/md';
+import { useTranslation } from 'react-i18next';
 
 const GlobalStyle = createGlobalStyle`
 @import url('https://fonts.googleapis.com/css2?family=PlusJakartaSans:wght@300,400;700&display=swap');
@@ -43,14 +43,17 @@ function ProfilePage() {
   const [imagePreview, setImagePreview] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const {t} =useTranslation();
+
 
   useEffect(() => {
     const userId = JSON.parse(localStorage.getItem('user'))?.id;
     if (userId) {
-      axios.get(`http://localhost:8080/api/user/${userId}`)
-        .then(response => {
+      axios
+        .get(`http://localhost:8080/api/user/${userId}`)
+        .then((response) => {
           const { prenom, nom, email, username, imageBase64 } = response.data;
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
             prenom,
             nom,
@@ -62,7 +65,7 @@ function ProfilePage() {
             setImagePreview(`data:image/jpeg;base64,${imageBase64}`);
           }
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Error fetching user data:', error);
         });
     }
@@ -70,7 +73,7 @@ function ProfilePage() {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormData(prevData => ({
+    setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
@@ -84,7 +87,7 @@ function ProfilePage() {
         setImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
-      setFormData(prevData => ({
+      setFormData((prevData) => ({
         ...prevData,
         image: file, // Store the File object for submission
       }));
@@ -93,16 +96,16 @@ function ProfilePage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
+
     const userData = JSON.parse(localStorage.getItem('user'));
     const accessToken = userData?.accessToken;
     const userId = userData?.id;
-  
+
     if (!accessToken || !userId) {
       console.error('Access token or User ID is missing from localStorage');
       return;
     }
-  
+
     if (
       !formData.prenom.trim() ||
       !formData.nom.trim() ||
@@ -112,11 +115,13 @@ function ProfilePage() {
       setErrorMessage('All fields are required');
       return;
     }
-  
+
     try {
-      const role = JSON.parse(localStorage.getItem('user')).roles.includes('ROLE_MODERATOR') ? 'moderator' : 'user';
+      const role = JSON.parse(localStorage.getItem('user')).roles.includes('ROLE_MODERATOR')
+        ? 'moderator'
+        : 'user';
       const roles = role === 'moderator' ? [{ name: 'ROLE_MODERATOR' }] : [{ name: 'ROLE_USER' }];
-  
+
       const userToSend = {
         prenom: formData.prenom,
         nom: formData.nom,
@@ -125,49 +130,45 @@ function ProfilePage() {
         roles,
         ...(formData.password && { password: formData.password }),
       };
-  
+
       const formDataToSend = new FormData();
       formDataToSend.append('user', JSON.stringify(userToSend));
-  
+
       if (formData.image) {
         formDataToSend.append('image', formData.image);
       }
-  
-      await axios.put(
-        `http://localhost:8080/api/user/${userId}`,
-        formDataToSend,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
-  
+
+      await axios.put(`http://localhost:8080/api/user/${userId}`, formDataToSend, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
       // Logout the user
       localStorage.removeItem('user');
       localStorage.removeItem('accessToken');
-  
+
       // Show success message and redirect to login page
       await Swal.fire({
         icon: 'success',
-        title: 'Profile Updated',
-        text: 'Your profile has been updated successfully. You will be redirected to the login page to log in again.',
-        confirmButtonText: 'OK',
+        title: t('Profile Updated'),
+        text: t(
+          'Your profile has been updated successfully. You will be redirected to the login page to log in again.',
+        ),
+        confirmButtonText: t('OK'),
       });
-  
+
       navigate('/auth/login'); // Redirect to login page
-  
     } catch (error) {
       setErrorMessage('Error updating profile');
       await Swal.fire({
         icon: 'error',
-        title: 'Error',
-        text: 'An error occurred while updating the profile. Please try again later.',
+        title: t('Error'),
+        text: t('An error occurred while updating the profile. Please try again later.'),
       });
     }
   };
-  
 
   return (
     <>
@@ -184,10 +185,12 @@ function ProfilePage() {
                       <div className="user-avatar">
                         <div className="avatar-container">
                           <img
-                            src={imagePreview || 'https://bootdey.com/img/Content/avatar/avatar7.png'}
+                            src={
+                              imagePreview || 'https://bootdey.com/img/Content/avatar/avatar7.png'
+                            }
                             alt="User Avatar"
                             className="avatar-image"
-                            style={{marginLeft:"75%"}}
+                            style={{ marginLeft: '75%' }}
                           />
                           <input
                             type="file"
@@ -196,8 +199,8 @@ function ProfilePage() {
                             name="image"
                             onChange={handleImageChange}
                           />
-                          <label htmlFor="image" className="file-label" >
-                            <span className="file-label-text">Change</span>
+                          <label htmlFor="image" className="file-label">
+                            <span className="file-label-text">{t('Change')}</span>
                             <MdOutlineInsertPhoto />
                           </label>
                         </div>
@@ -208,8 +211,12 @@ function ProfilePage() {
                     <div className="about">
                       <h5 style={{ color: '#cf022b' }}>About</h5>
                       <p>
-                        I'm {formData.username}. Full Stack Designer I enjoy creating user-centric,
-                        delightful and human experiences.
+                        {t(
+                          "I'm {{username}}. Full Stack Designer I enjoy creating user-centric, delightful and human experiences.",
+                          {
+                            username: formData.username,
+                          },
+                        )}
                       </p>
                     </div>
                   </div>
@@ -222,18 +229,18 @@ function ProfilePage() {
                   <div className="row gutters">
                     <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                       <h6 className="mb-2 text" style={{ color: '#cf022b' }}>
-                        Personal Details
+                        {t('Personal Details')}
                       </h6>
                     </div>
                     <div className="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
                       <div className="form-group">
-                        <label htmlFor="username">Username</label>
+                        <label htmlFor="username">{t('Username')}</label>
                         <input
                           type="text"
                           className="form-control"
                           id="username"
                           name="username"
-                          placeholder="Enter your new username"
+                          placeholder={t('Enter your new username')}
                           value={formData.username}
                           onChange={handleChange}
                         />
@@ -241,13 +248,13 @@ function ProfilePage() {
                     </div>
                     <div className="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
                       <div className="form-group">
-                        <label htmlFor="email">Email</label>
+                        <label htmlFor="email">{t('Email')}</label>
                         <input
                           type="email"
                           className="form-control"
                           id="email"
                           name="email"
-                          placeholder="Enter email ID"
+                          placeholder={t('Enter email ID')}
                           value={formData.email}
                           onChange={handleChange}
                         />
@@ -255,13 +262,13 @@ function ProfilePage() {
                     </div>
                     <div className="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
                       <div className="form-group">
-                        <label htmlFor="nom">Nom</label>
+                        <label htmlFor="nom">{t('Nom')}</label>
                         <input
                           type="text"
                           className="form-control"
                           id="nom"
                           name="nom"
-                          placeholder="Enter your new nom"
+                          placeholder={t('Enter your new nom')}
                           value={formData.nom}
                           onChange={handleChange}
                         />
@@ -269,13 +276,13 @@ function ProfilePage() {
                     </div>
                     <div className="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
                       <div className="form-group">
-                        <label htmlFor="prenom">Prenom</label>
+                        <label htmlFor="prenom">{t('Prenom')}</label>
                         <input
                           type="text"
                           className="form-control"
                           id="prenom"
                           name="prenom"
-                          placeholder="Enter your new prenom"
+                          placeholder={t('Enter your new prenom')}
                           value={formData.prenom}
                           onChange={handleChange}
                         />
@@ -285,18 +292,18 @@ function ProfilePage() {
                   <div className="row gutters">
                     <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                       <h6 className="mt-3 mb-2 text" style={{ color: '#cf022b' }}>
-                        Password
+                        {t('Password')}
                       </h6>
                     </div>
                     <div className="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
                       <div className="form-group">
-                        <label htmlFor="password">New Password</label>
+                        <label htmlFor="password">{t('New Password')}</label>
                         <input
                           type="password"
                           className="form-control"
                           id="password"
                           name="password"
-                          placeholder="Enter your new password"
+                          placeholder={t('Enter your new password')}
                           value={formData.password}
                           onChange={handleChange}
                         />
@@ -311,7 +318,7 @@ function ProfilePage() {
                           className="btn btn-secondary"
                           style={{ marginRight: '10px' }}
                         >
-                          Cancel
+                          {t('Cancel')}
                         </Link>
                         <button
                           type="button"
@@ -319,7 +326,7 @@ function ProfilePage() {
                           style={{ marginRight: '20px', backgroundColor: '#cf022b', color: '#fff' }}
                           onClick={handleSubmit}
                         >
-                          Update
+                          {t('Update')}
                         </button>
                       </div>
                       {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
