@@ -47,8 +47,8 @@ jobs:
           docker buildx build --platform linux/amd64 \
             -t ${{ secrets.DOCKER_HUB_USERNAME }}/react-app:${{ github.sha }} \
             --push \
-            --file ./frontend/FRONTENDQR/Dockerfile \  # Specify the Dockerfile path
-            ./frontend/FRONTENDQR                      # Specify the build context path
+            --file ./frontend/FRONTENDQR/Dockerfile \
+            ./frontend/FRONTENDQR
         shell: bash
 
       - name: Login to DockerHub
