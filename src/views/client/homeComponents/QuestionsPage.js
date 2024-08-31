@@ -250,9 +250,9 @@ const QuestionsPage = () => {
       try {
         await axios.delete(`http://localhost:8080/api/questions/${questionId}`);
         fetchAllQuestions();
-        Swal.fire('Deleted!', 'Your question has been deleted.', 'success');
+        Swal.fire('Deleted!', 'the question has been deleted.', 'success');
       } catch (error) {
-        Swal.fire('Error!', 'There was an error deleting your question.', 'error');
+        Swal.fire('Error!', 'There was an error deleting the question.', 'error');
       }
     }
   };

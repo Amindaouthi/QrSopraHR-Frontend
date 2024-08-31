@@ -57,26 +57,41 @@ export default function Tags() {
   const handleAddTag = async () => {
     const { value: formValues } = await Swal.fire({
       title: t('Add New Tag'),
-      html:
-        '<input id="name" class="swal2-input" style="margin-bottom : 10px" placeholder="' + t('Enter tag name') + '" />' +
-        '<textarea id="description" class="swal2-input" style="padding : 10px"placeholder="' + t('Enter tag description') + '"></textarea>',
+      html: `
+        <div class="swal2-custom-input-container">
+          <input id="name" class="swal2-input swal2-custom-input" placeholder="${t('Enter tag name')}" />
+        </div>
+        <div class="swal2-custom-textarea-container">
+          <textarea id="description" class="swal2-textarea swal2-custom-textarea" placeholder="${t('Enter tag description')}" rows="4"></textarea>
+        </div>
+      `,
       focusConfirm: false,
       preConfirm: () => {
-        return {
-          name: document.getElementById('name').value,
-          description: document.getElementById('description').value,
-        };
+        const name = document.getElementById('name').value.trim();
+        const description = document.getElementById('description').value.trim();
+  
+        if (!name) {
+          Swal.showValidationMessage(t('Tag name is required.'));
+          return false;
+        }
+  
+        return { name, description };
+      },
+      customClass: {
+        popup: 'swal2-custom-popup',
+        title: 'swal2-custom-title',
+        confirmButton: 'swal2-custom-confirm-button',
       },
     });
-
-    if (formValues && formValues.name) {
-      // Call API to add the new tag
+  
+    if (formValues) {
       try {
         await axios.post('http://localhost:8080/api/tags/create', formValues, {
           headers: {
             Authorization: `Bearer ${votreToken}`,
           },
         });
+  
         // Refresh the tags list
         const response = await axios.get('http://localhost:8080/api/tags/getAll', {
           headers: {
@@ -84,13 +99,30 @@ export default function Tags() {
           },
         });
         setTags(response.data);
-        Swal.fire(t('Tag added successfully!'), '', 'success');
+  
+        Swal.fire({
+          title: t('Tag added successfully!'),
+          icon: 'success',
+          customClass: {
+            popup: 'swal2-custom-popup',
+            confirmButton: 'swal2-custom-confirm-button',
+          },
+        });
       } catch (error) {
         console.error(t('Error adding tag:'), error.message);
-        Swal.fire('Error adding tag', '', 'error');
+        Swal.fire({
+          title: t('Error adding tag'),
+          text: error.message,
+          icon: 'error',
+          customClass: {
+            popup: 'swal2-custom-popup',
+            confirmButton: 'swal2-custom-confirm-button',
+          },
+        });
       }
     }
   };
+  
 
   useEffect(() => {
     const options = {
@@ -165,9 +197,12 @@ export default function Tags() {
             Authorization: `Bearer ${votreToken}`,
           },
         });
-        Swal.fire(t('Tag updated successfully!'), '', 'success');
-        window.location.reload();
-
+        Swal.fire({
+          title: t('Tag updated successfully!'),
+          icon: 'success',
+          timer: 5000, // Time in milliseconds (e.g., 5000ms = 5 seconds)
+          showConfirmButton: false, // Optionally hide the confirm button
+        });
         // Update only the tag's description
         setTags((prevTags) =>
           prevTags.map((tag) =>

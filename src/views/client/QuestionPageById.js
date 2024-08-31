@@ -14,6 +14,7 @@ import UserAvatar from './UserAvatar';
 import { FaLink } from 'react-icons/fa';
 import { IoIosCheckmarkCircleOutline } from 'react-icons/io';
 import Swal from 'sweetalert2';
+import { like, dislike, getVoteStatus } from './voteService'; // Import des services de vote
 const GlobalStyle = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=PlusJakartaSans:wght@300,400;700&display=swap');
   body {
@@ -104,6 +105,23 @@ const CorrectAnswerLabel = styled.div`
     color: green;
   }
 `;
+const VoteButton = styled(FontAwesomeIcon)`
+  cursor: pointer;
+  margin: 0 10px;
+  font-size: 24px;
+  color: ${(props) => (props.active ? '#28a745' : '#6c757d')}; /* Green if active, grey otherwise */
+  &:hover {
+    color: ${(props) => (props.active ? '#218838' : '#495057')}; /* Darker on hover */
+  }
+`;
+
+const VoteCount = styled.span`
+  font-weight: bold;
+  font-size: 18px;
+  margin: 0 5px;
+  color: #333;
+`;
+
 const CheckmarkIcon = styled(IoIosCheckmarkCircleOutline)`
   cursor: pointer;
   color: ${(props) => (props.isAccepted ? 'green' : '#ccc')};
@@ -116,6 +134,7 @@ function QuestionsPageById() {
   const [answer, setAnswer] = useState('');
   const [answers, setAnswers] = useState([]);
   const { questionId } = useParams();
+  
   const [file, setFile] = useState(null);
   const [isAccepted, setIsAccepted] = useState(false);
   const navigate = useNavigate();
@@ -129,7 +148,31 @@ function QuestionsPageById() {
   const [replyContent, setReplyContent] = useState('');
   const replyFormRef = useRef(null);
   const [isModerator, setIsModerator] = useState(false);
+  
+  const [liked, setLiked] = useState(false);
+  const [disliked, setDisliked] = useState(false);
 
+  // Function to count votes based on value
+  const calculateTotalVotes = () => {
+    if (Array.isArray(question.votes)) {
+      return question.votes.length
+        ? question.votes.map(vote => vote.value).reduce((a, b) => a + b, 0)
+        : 0;
+    }
+    return 0;
+  };
+
+  const handleLikeClick = () => {
+    handleLike();
+    setLiked(true);
+    setDisliked(false); // Ensure dislike is reset
+  };
+
+  const handleDislikeClick = () => {
+    handleDislike();
+    setLiked(false); // Ensure like is reset
+    setDisliked(true);
+  };
   const token = localStorage.getItem('token');
 
   const userObject = JSON.parse(localStorage.getItem('user'));
@@ -239,17 +282,12 @@ function QuestionsPageById() {
   };
 
   const fetchVote = async () => {
-    const entityType = 'Question';
-    const entityId = questionId;
     try {
-      const response = await axios.get('http://localhost:8080/api/votes/status', {
-        params: { entityType, entityId, userId },
-      });
-      setVoteValue(response.data.value);
-      setTotalVote(response.data.totalVotes);
-      console.log(response.data);
+      const voteData = await fetchVoteStatus('Question', questionId, userId);
+      setVoteValue(voteData.value);
+      setTotalVote(voteData.totalVotes);
     } catch (error) {
-      console.error('There was an error fetching the vote status!', error);
+      console.error('Error fetching vote status:', error);
     }
   };
 
@@ -301,64 +339,73 @@ function QuestionsPageById() {
     }
   };
 
-  const handleVote = async (value) => {
+  const handleLike = async () => {
     try {
-      const response = await axios.post(
-        `http://localhost:8080/api/votes/Question/${questionId}`,
-        null,
-        {
-          params: { userId, value },
-        },
-      );
-      console.log(response.data);
-      setVoteValue(value);
-      fetchVote(); // Récupère les votes mis à jour
+      const voteResponse = await like('Question', questionId, userId);
+      setQuestion((prev) => ({
+        ...prev,
+        votes: voteResponse.updatedVotes,
+      }));
+      Swal.fire('Vote enregistré !', 'Votre like a été pris en compte.', 'success');
+      refreshPage()
     } catch (error) {
-      console.error('There was an error!', error);
+      Swal.fire('Erreur!', 'Une erreur est survenue lors du like.', 'error');
     }
   };
 
-  const handleVote1 = async (value, id) => {
+  // Handler pour disliker une question
+  const handleDislike = async () => {
     try {
-      const response = await axios.post(`http://localhost:8080/api/votes/Answer/${id}`, null, {
-        params: { userId, value },
-      });
-      console.log('Vote response:', response.data);
+      const voteResponse = await dislike('Question', questionId, userId);
+      setQuestion((prev) => ({
+        ...prev,
+        votes: voteResponse.updatedVotes,
+      }));
+      Swal.fire('Vote enregistré !', 'Votre dislike a été pris en compte.', 'success');
+    } catch (error) {
+      Swal.fire('Erreur!', 'Une erreur est survenue lors du dislike.', 'error');
+    }
+  };
 
-      // Display SweetAlert notification
-      const voteType = value === 1 ? 'Upvoted' : 'Downvoted';
-      Swal.fire({
-        title: t('You {{voteType}} this answer!', { voteType }),
-        text: t('The current vote count is {{updatedVotes}}.', {
-          updatedVotes: response.data.updatedVotes,
-        }),
-        icon: 'success',
-        confirmButtonText: t('OK'),
-      });
-
-      // Update the answers state to reflect the new vote status
+  // Handler pour liker une réponse
+  const handleAnswerLike = async (answerId) => {
+    try {
+      const voteResponse = await like('Answer', answerId, userId);
       setAnswers((prevAnswers) =>
         prevAnswers.map((answer) =>
-          answer.id === id
-            ? {
-                ...answer,
-                votes: response.data.updatedVotes, // Correctly use updatedVotes from the backend
-                userVote: response.data.userVote, // Updated user vote (null if removed)
-              }
-            : answer,
+          answer.id === answerId ? { ...answer, votes: voteResponse.updatedVotes } : answer,
         ),
       );
-    } catch (error) {
-      console.error('There was an error!', error);
-      Swal.fire({
-        title: t('Error!'),
-        text: t('Something went wrong with your vote. Please try again.'),
-        icon: 'error',
-        confirmButtonText: t('OK'),
-      });
+      Swal.fire('Vote enregistré !', 'Votre like a été pris en compte.', 'success');
       refreshPage();
+    } catch (error) {
+      Swal.fire('Erreur!', 'Une erreur est survenue lors du like.', 'error');
     }
+    
   };
+  useEffect(() => {
+    fetchQuestionById();
+  }, [questionId]);
+
+  // Handler pour disliker une réponse
+  const handleAnswerDislike = async (answerId) => {
+    try {
+      const voteResponse = await dislike('Answer', answerId, userId);
+      setAnswers((prevAnswers) =>
+        prevAnswers.map((answer) =>
+          answer.id === answerId ? { ...answer, votes: voteResponse.updatedVotes } : answer,
+        ),
+      );
+      Swal.fire('Vote enregistré !', 'Votre dislike a été pris en compte.', 'success');
+      refreshPage();
+    } catch (error) {
+      Swal.fire('Erreur!', 'Une erreur est survenue lors du dislike.', 'error');
+    }
+    
+  };
+  useEffect(() => {
+    fetchQuestionById();
+  }, [questionId]);
 
   const handleClickOutside = (event) => {
     if (replyFormRef.current && !replyFormRef.current.contains(event.target)) {
@@ -645,25 +692,27 @@ function QuestionsPageById() {
                         {/* Vote handling for the question */}
                         <p className="blog-meta">
                           <span>
-                            <FontAwesomeIcon
-                              icon={faThumbsUp}
-                              onClick={() => handleVote(1)}
-                              style={{
-                                cursor: voteValue === 1 ? 'default' : 'pointer',
-                                color: voteValue === 1 ? 'green' : 'black',
-                              }}
-                              disabled={voteValue === 1}
-                            />
-                            <span className="mx-4">{totalVote >= 1 ? totalVote : 0}</span>
-                            <FontAwesomeIcon
-                              icon={faThumbsDown}
-                              onClick={() => handleVote(0)}
-                              style={{
-                                cursor: voteValue === 0 ? 'default' : 'pointer',
-                                color: voteValue === 0 ? 'red' : 'black',
-                              }}
-                              disabled={voteValue === 0}
-                            />
+                          <FontAwesomeIcon
+        icon={faThumbsUp}
+        onClick={handleLikeClick}
+        style={{ 
+          cursor: 'pointer', 
+          color: liked ? 'green' : 'black',
+          fontSize: '1.5rem'
+        }}
+      />
+      <span style={{ margin: '0 20px', minWidth: '20px', textAlign: 'center' }}>
+      {calculateTotalVotes()}
+      </span>
+      <FontAwesomeIcon
+        icon={faThumbsDown}
+        onClick={handleDislikeClick}
+        style={{ 
+          cursor: 'pointer', 
+          color: disliked ? 'red' : 'black',
+          fontSize: '1.5rem'
+        }}
+      />
                           </span>
 
                           <span className="author">
@@ -691,7 +740,7 @@ function QuestionsPageById() {
                       <h2 className="title">{question.title}</h2>
                       <p className="content">{question.content}</p>
                       <div className="tags">
-                      <p className="tag">{t('Tags:')}</p>
+                        <p className="tag">{t('Tags:')}</p>
                         <div className="tag-container">
                           {question.tags &&
                             question.tags.map((tag, index) => (
@@ -704,7 +753,7 @@ function QuestionsPageById() {
 
                       <div className="comments-list-wrap">
                         <h3 className="comment-count-title">
-                        {question.answers && question.answers.length} {t('response')} :
+                          {question.answers && question.answers.length} {t('response')} :
                         </h3>
 
                         <div className="comment-list">
@@ -723,7 +772,10 @@ function QuestionsPageById() {
                                       </div>
                                       <span style={{ marginLeft: '45px' }}>{answer.username}</span>
                                       <span className="comment-date" style={{ marginLeft: '5px' }}>
-                                      <p>{t('Answered on')} {' '} <span>{/* Add date or other relevant info here */}</span></p>
+                                        <p>
+                                          {t('Answered on')}{' '}
+                                          <span>{/* Add date or other relevant info here */}</span>
+                                        </p>
                                         {new Date(answer.createdAt).toLocaleDateString()}
                                       </span>{' '}
                                       <button
@@ -861,29 +913,21 @@ function QuestionsPageById() {
                                     <span key={answer.id}>
                                       <FontAwesomeIcon
                                         icon={faThumbsUp}
-                                        onClick={() => handleVote1(1, answer.id)}
-                                        style={{
-                                          cursor: answer.userVote === 1 ? 'default' : 'pointer',
-                                          color: answer.userVote === 1 ? 'green' : 'black',
-                                        }}
-                                        disabled={answer.userVote === 1}
+                                        onClick={() => handleAnswerLike(answer.id)}
+                                        style={{ cursor: 'pointer', color: 'black' }}
                                       />
-
-                                      {/* Display the updated vote count */}
-                                      <span className="mx-4">
-                                        {answer.votes.length !== undefined
-                                          ? answer.votes.length
-                                          : 0}
+                                      <span style={{margin: '0 20px', minWidth: '20px', textAlign: 'center'}}>
+                                        {answer.votes.length
+                                          ? answer.votes
+                                              .map((vote) => vote.value)
+                                              .reduce((a, b) => a + b, 0)
+                                          : 0}{' '}
+                                        {/* Somme des valeurs de vote */}
                                       </span>
-
                                       <FontAwesomeIcon
                                         icon={faThumbsDown}
-                                        onClick={() => handleVote1(0, answer.id)}
-                                        style={{
-                                          cursor: answer.userVote === 0 ? 'default' : 'pointer',
-                                          color: answer.userVote === 0 ? 'red' : 'black',
-                                        }}
-                                        disabled={answer.userVote === 0}
+                                        onClick={() => handleAnswerDislike(answer.id)}
+                                        style={{ cursor: 'pointer', color: 'black' }}
                                       />
                                     </span>
 
@@ -992,7 +1036,9 @@ function QuestionsPageById() {
                           {isAccepted ? (
                             <div>
                               <p>
-                              {t('Apologies, but with your effort ❤ , we found the best answer. The question is now closed.')}
+                                {t(
+                                  'Apologies, but with your effort ❤ , we found the best answer. The question is now closed.',
+                                )}
                               </p>
                             </div>
                           ) : (

@@ -165,7 +165,7 @@ const MesQuestions = () => {
           setQuestions(questions.filter(question => question.id !== questionId));
           Swal.fire({
             title: t('Deleted!'),
-            text: t('Your file has been deleted.'),
+            text: t('Your question has been deleted.'),
             icon: 'success'
           });
           console.log('Question deleted successfully:', response.data);
