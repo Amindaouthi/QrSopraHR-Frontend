@@ -45,6 +45,6 @@ jobs:
           docker buildx build --platform linux/amd64 \
             -t bennassermedghassen/react-app:${{ github.sha }} \
             --push \
-            --file ./frontend/FRONTENDQR/Dockerfile \  # Correct Dockerfile path
-            ./frontend/FRONTENDQR                      # Correct build context
+            --file "./frontend/FRONTENDQR/Dockerfile" \  # Correct Dockerfile path
+            "./frontend/FRONTENDQR"                    # Correct build context
         shell: bash
