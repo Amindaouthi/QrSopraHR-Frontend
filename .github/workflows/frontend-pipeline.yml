@@ -17,6 +17,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Verify Directory Structure
+        run: |
+          pwd
+          ls -R  # List all files and directories to check the structure
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -40,6 +45,6 @@ jobs:
           docker buildx build --platform linux/amd64 \
             -t bennassermedghassen/react-app:${{ github.sha }} \
             --push \
-            --file ./frontend/FRONTENDQR/Dockerfile \
-            ./frontend/FRONTENDQR
+            --file ./FRONTENDQR/Dockerfile \  # Correct path to Dockerfile
+            ./FRONTENDQR                      # Correct context path
         shell: bash
