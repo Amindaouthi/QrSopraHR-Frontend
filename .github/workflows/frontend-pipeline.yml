@@ -33,7 +33,10 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
+          # Create a new builder instance and use it
           docker buildx create --use
+          
+          # Build the Docker image with the correct context and Dockerfile path
           docker buildx build --platform linux/amd64 \
             -t bennassermedghassen/react-app:${{ github.sha }} \
             --push \
