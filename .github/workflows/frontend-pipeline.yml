@@ -43,15 +43,15 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          # Build the image with the correct context
-          docker buildx build --platform linux/amd64 -t ${{ secrets.DOCKER_HUB_USERNAME }}/react-app:${{ github.sha }} --push .
+          # Build the Docker image with the correct context path
+          docker buildx build --platform linux/amd64 -t ${{ secrets.DOCKER_HUB_USERNAME }}/react-app:${{ github.sha }} --push ./frontend/FRONTENDQR
         shell: bash
 
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Push Docker image with additional tags
         run: |
