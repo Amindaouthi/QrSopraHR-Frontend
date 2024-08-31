@@ -3,12 +3,12 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import NewNavbar from './homeComponents/NewNavbar';
 import Sidebar from './homeComponents/sidebar';
-import Header2 from './homeComponents/Header2';
+
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
-import { t } from 'i18next';
+
 import { useTranslation } from 'react-i18next';
 
 const QuestionStat = styled.div`
@@ -55,9 +55,7 @@ const WhoAndWhen = styled.div`
   padding: 10px 0;
 `;
 
-const UserLink = styled.a`
-  color: #bc1434;
-`;
+
 
 const StyledQuestionRow = styled.div`
   background-color: rgba(0, 0, 0, 0.01);

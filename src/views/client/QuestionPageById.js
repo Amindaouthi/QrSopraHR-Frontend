@@ -73,26 +73,9 @@ const Separator = styled.hr`
   margin: 30px 0;
 `;
 
-const EditDeleteIcons = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  margin-top: -20px;
-`;
 
-const Icon = styled.div`
-  margin-left: 10px;
-  cursor: pointer;
-`;
-const Tag = styled.div`
-  display: inline-block;
-  margin-right: 5px;
-  background-color: rgb(0 0 0 / 10%);
-  color: #000000;
-  padding: 7px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  cursor: pointer;
-`;
+
+
 const CorrectAnswerLabel = styled.div`
   display: flex;
   align-items: center;
@@ -105,22 +88,7 @@ const CorrectAnswerLabel = styled.div`
     color: green;
   }
 `;
-const VoteButton = styled(FontAwesomeIcon)`
-  cursor: pointer;
-  margin: 0 10px;
-  font-size: 24px;
-  color: ${(props) => (props.active ? '#28a745' : '#6c757d')}; /* Green if active, grey otherwise */
-  &:hover {
-    color: ${(props) => (props.active ? '#218838' : '#495057')}; /* Darker on hover */
-  }
-`;
 
-const VoteCount = styled.span`
-  font-weight: bold;
-  font-size: 18px;
-  margin: 0 5px;
-  color: #333;
-`;
 
 const CheckmarkIcon = styled(IoIosCheckmarkCircleOutline)`
   cursor: pointer;
@@ -132,15 +100,15 @@ function QuestionsPageById() {
   const { t } = useTranslation();
   const [question, setQuestion] = useState(null);
   const [answer, setAnswer] = useState('');
-  const [answers, setAnswers] = useState([]);
+  const [ setAnswers] = useState([]);
   const { questionId } = useParams();
   
   const [file, setFile] = useState(null);
   const [isAccepted, setIsAccepted] = useState(false);
   const navigate = useNavigate();
-  const [voteValue, setVoteValue] = useState(null);
-  const [totalVote, setTotalVote] = useState(null);
-  const [voteValue1, setVoteValue1] = useState(null);
+  const [ setVoteValue] = useState(null);
+  const [ setTotalVote] = useState(null);
+  
   const [filePreview, setFilePreview] = useState(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [fullScreenSrc, setFullScreenSrc] = useState('');
@@ -283,7 +251,7 @@ function QuestionsPageById() {
 
   const fetchVote = async () => {
     try {
-      const voteData = await fetchVoteStatus('Question', questionId, userId);
+      const voteData = await getVoteStatus('Question', questionId, userId);
       setVoteValue(voteData.value);
       setTotalVote(voteData.totalVotes);
     } catch (error) {

@@ -41,7 +41,7 @@ function ProfilePage() {
     image: null,
   });
   const [imagePreview, setImagePreview] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [successMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const {t} =useTranslation();
 
