@@ -17,20 +17,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Verify Directory Structure
-        run: |
-          echo "Current Directory:"
-          pwd  # Print the current working directory to verify location
-          echo "Directory Contents:"
-          ls -R  # List all files and directories to confirm paths
-
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/react-app:${{ github.sha }} .
 
       - name: Login to DockerHub
         uses: docker/login-action@v2
@@ -38,23 +40,24 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Build and Push Docker image
+      - name: Push Docker image
         run: |
-          # Create and use a new builder instance
-          docker buildx create --use
-          
-          # Ensure paths are correctly set
-          DOCKERFILE_PATH="./frontend/FRONTENDQR/Dockerfile"
-          CONTEXT_PATH="./frontend/FRONTENDQR"
+          docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/react-app:${{ github.sha }} ${{ secrets.DOCKER_HUB_USERNAME }}/react-app:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/react-app:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/react-app:latest
 
-          # Print paths to verify correctness
-          echo "Dockerfile path: $DOCKERFILE_PATH"
-          echo "Context path: $CONTEXT_PATH"
+ # deploy:
+  #  name: Deploy to Server
+   # runs-on: ubuntu-latest
+   # needs: build-and-push
 
-          # Build and push the Docker image using the correct paths
-          docker buildx build --platform linux/amd64 \
-            -t bennassermedghassen/react-app:${{ github.sha }} \
-            --push \
-            --file "$DOCKERFILE_PATH" \
-            "$CONTEXT_PATH"
-        shell: bash
+   # steps:
+    #  - name: Login to DockerHub
+     #   uses: docker/login-action@v2
+      #  with:
+       #   username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        #  password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+    #  - name: Deploy with Docker Compose
+     #   run: |
+      #    ssh user@your-server-ip "docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/react-app:latest && docker-compose -f /path/to/your/docker-compose.yml up -d"
