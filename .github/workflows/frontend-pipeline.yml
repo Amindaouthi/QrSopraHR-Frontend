@@ -19,7 +19,9 @@ jobs:
 
       - name: Verify Directory Structure
         run: |
+          echo "Current Directory:"
           pwd  # Print the current working directory to verify location
+          echo "Directory Contents:"
           ls -R  # List all files and directories to confirm paths
 
       - name: Set up Node.js
@@ -41,10 +43,18 @@ jobs:
           # Create and use a new builder instance
           docker buildx create --use
           
+          # Ensure paths are correctly set
+          DOCKERFILE_PATH="./frontend/FRONTENDQR/Dockerfile"
+          CONTEXT_PATH="./frontend/FRONTENDQR"
+
+          # Print paths to verify correctness
+          echo "Dockerfile path: $DOCKERFILE_PATH"
+          echo "Context path: $CONTEXT_PATH"
+
           # Build and push the Docker image using the correct paths
           docker buildx build --platform linux/amd64 \
             -t bennassermedghassen/react-app:${{ github.sha }} \
             --push \
-            --file "./frontend/FRONTENDQR/Dockerfile" \  # Correct Dockerfile path
-            "./frontend/FRONTENDQR"                    # Correct build context
+            --file "$DOCKERFILE_PATH" \
+            "$CONTEXT_PATH"
         shell: bash
