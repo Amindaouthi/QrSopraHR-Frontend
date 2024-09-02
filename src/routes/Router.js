@@ -5,7 +5,7 @@ import ResetPassword from 'src/views/authentication/ResetPassword';
 import AskPage from 'src/views/client/AskPage';
 import ProfilePage from 'src/views/client/ProfilePage';
 import QuestionsPageById from 'src/views/client/QuestionPageById';
-
+import AnswersResponsePage from 'src/views/client/homeComponents/MesanswerResponse';
 import QuestionsPage from 'src/views/client/homeComponents/QuestionsPage';
 import Tags from 'src/views/client/homeComponents/Tags';
 import AjouterModerateur from 'src/views/sample-page/AjouterModerateur';
@@ -89,6 +89,7 @@ const Router = [
       { path: '/client/user/:userId', element: <ChartComponent /> },
       { path: '/client/Mesquestions', element: <MesQuestions /> },
       { path: '/client/Mesanswers', element: <AnswersPage /> },
+      { path: '/client/Mesanswersreponse', element: <AnswersResponsePage /> },
       { path: '/client/MesQuestionsFavorits', element: <MesQuestionsFavorites /> },
       { path: '/client/user', element: <ChartComponent /> },
       { path: '/client/chatbox', element: <ChatBox /> },

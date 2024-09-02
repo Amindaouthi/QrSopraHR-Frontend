@@ -151,12 +151,18 @@ const Profile = () => {
         </ListItemIcon>
         <ListItemText>My Questions</ListItemText>
       </MenuItem>,
-      <MenuItem key="my-answers" component={Link} to="/client/Mesanswers">
+      <><MenuItem key="my-answers" component={Link} to="/client/Mesanswers">
         <ListItemIcon>
           <IconListCheck width={20} />
         </ListItemIcon>
         <ListItemText>My Answers</ListItemText>
-      </MenuItem>
+      </MenuItem><MenuItem key="my-answers_response" component={Link} to="/client/Mesanswersreponse">
+          <ListItemIcon>
+            <IconListCheck width={20} />
+          </ListItemIcon>
+          <ListItemText>My Answers Response</ListItemText>
+        </MenuItem></>
+      
     ]
   )}
 

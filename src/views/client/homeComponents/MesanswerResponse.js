@@ -79,41 +79,45 @@ const DateInputsContainer = styled.div`
 
 const H2 = styled.h2`
   margin-top: 10%;
-  font-size: 2em; /* Adjust the size as needed */
+  font-size: 2em;
   font-weight: bold;
-  color: #333; /* Darker color for better readability */
-  text-align: center; /* Center the heading */
-  font-family: 'Arial', sans-serif; /* Change the font family as needed */
-  text-transform: uppercase; /* Optional: Transform text to uppercase */
-  letter-spacing: 1px; /* Optional: Add space between letters */
-  padding-bottom: 10px; /* Optional: Add some padding below */
-  border-bottom: 2px solid #ddd; /* Optional: Add a bottom border for a more defined look */
+  color: #333;
+  text-align: center;
+  font-family: 'Arial', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #ddd;
 `;
 
-const AnswersPage = () => {
+const AnswersResponsePage = () => {
   const userData = JSON.parse(localStorage.getItem('user'));
   const accessToken = userData?.accessToken;
   const userId = userData?.id;
   const [answers, setAnswers] = useState([]);
-  const [selectedAnswer, setSelectedAnswer] = useState({ id: null, content: '' });
   const [startDate, setStartDate] = useState('2024-01-01');
   const [endDate, setEndDate] = useState('2024-12-31');
-  const {t} =useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const fetchAnswers = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/questions/byuseranddate?userId=${userId}&startDate=${startDate}&endDate=${endDate}`,
+        `http://localhost:8080/api/questions/answersbyuseranddaterange?userId=${userId}&startDate=${startDate}&endDate=${endDate}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        },
+        }
       );
       setAnswers(response.data);
     } catch (error) {
       console.error('Error fetching answers:', error);
+      MySwal.fire({
+        title: t('Error!'),
+        text: t('Failed to fetch answers.'),
+        icon: 'error'
+      });
     }
   };
 
@@ -180,7 +184,7 @@ const AnswersPage = () => {
               'Content-Type': 'multipart/form-data',
               Authorization: `Bearer ${accessToken}`,
             },
-          },
+          }
         );
         MySwal.fire({
           title: t('Updated!'),
@@ -222,7 +226,7 @@ const AnswersPage = () => {
               headers: {
                 Authorization: `Bearer ${accessToken}`,
               },
-            },
+            }
           );
           setAnswers(answers.filter((answer) => answer.id !== answerId));
           MySwal.fire({
@@ -266,11 +270,11 @@ const AnswersPage = () => {
         <Sidebar className="h-100" />
 
         <div style={{ flex: 1 }}>
-        <H2>{t('My Response')}</H2>
+          <H2>My Response to Answer</H2>
           <div style={{ padding: '20px', marginTop: '10px' }}>
             <DateInputsContainer style={{ marginLeft: '25%' }}>
               <div>
-              <label htmlFor="startDate">{t('Start Date:')}</label>
+                <label htmlFor="startDate">{t('Start Date:')}</label>
                 <input
                   type="date"
                   id="startDate"
@@ -279,7 +283,7 @@ const AnswersPage = () => {
                 />
               </div>
               <div>
-              <label htmlFor="endDate">{t('End Date:')}</label>
+                <label htmlFor="endDate">{t('End Date:')}</label>
                 <input type="date" id="endDate" value={endDate} onChange={handleEndDateChange} />
               </div>
             </DateInputsContainer>
@@ -318,4 +322,4 @@ const AnswersPage = () => {
   );
 };
 
-export default AnswersPage;
+export default AnswersResponsePage;
