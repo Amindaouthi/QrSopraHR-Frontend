@@ -31,21 +31,20 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Build Docker image
-  run: |
-    # Ensure the paths are correct
-    echo "Building Docker image..."
-    DOCKERFILE_PATH="./Dockerfile"  # Correct path to your Dockerfile
-    CONTEXT_PATH="."  # Build context is the root of FRONTENDQR directory
+        run: |
+          # Ensure the paths are correct
+          echo "Building Docker image..."
+          DOCKERFILE_PATH="./Dockerfile"  # Correct path to your Dockerfile
+          CONTEXT_PATH="."  # Build context is the root of FRONTENDQR directory
 
-    # Confirm paths
-    echo "Using Dockerfile: $DOCKERFILE_PATH"
-    echo "Using context: $CONTEXT_PATH"
+          # Confirm paths
+          echo "Using Dockerfile: $DOCKERFILE_PATH"
+          echo "Using context: $CONTEXT_PATH"
 
-    # Build the Docker image
-    docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/react-app:${{ github.sha }} \
-      --file "$DOCKERFILE_PATH" \
-      "$CONTEXT_PATH"
-  shell: bash
+          # Build the Docker image
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/react-app:${{ github.sha }} \
+            --file "$DOCKERFILE_PATH" \
+            "$CONTEXT_PATH"
 
       - name: Login to DockerHub
         uses: docker/login-action@v2
