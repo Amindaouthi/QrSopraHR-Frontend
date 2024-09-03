@@ -56,5 +56,5 @@ jobs:
             "$CONTEXT_PATH"
 
           # Push the Docker image
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:${{ github.sha }}
+          docker push bennassermedghassen/my-app:${{ github.sha }}
         shell: bash
