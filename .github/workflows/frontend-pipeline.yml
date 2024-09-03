@@ -60,3 +60,4 @@ jobs:
             --push \
             --file "$DOCKERFILE_PATH" \
             "$CONTEXT_PATH"
+        shell: bash
