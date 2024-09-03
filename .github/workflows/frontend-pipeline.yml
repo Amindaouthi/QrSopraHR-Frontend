@@ -42,9 +42,8 @@ jobs:
           echo "Using context: $CONTEXT_PATH"
 
           # Build the Docker image
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/react-app:${{ github.sha }} \
-            --file "$DOCKERFILE_PATH" \
-            "$CONTEXT_PATH"
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/react-app:${{ github.sha }} .
+          
 
       - name: Login to DockerHub
         uses: docker/login-action@v2
