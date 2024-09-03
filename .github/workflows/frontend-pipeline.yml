@@ -1,4 +1,4 @@
-name: Build and Deploy React App
+name: Build and Deploy Docker Image
 
 on:
   push:
@@ -41,23 +41,20 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          # Create and use a new builder instance
-          docker buildx create --use
-
           # Ensure the paths are correct
           echo "Building Docker image..."
           DOCKERFILE_PATH="./Dockerfile"  # Correct path to your Dockerfile
-          CONTEXT_PATH="."  # Build context is the root of FRONTENDQR directory
+          CONTEXT_PATH="."  # Build context is the root directory
 
           # Confirm paths
           echo "Using Dockerfile: $DOCKERFILE_PATH"
           echo "Using context: $CONTEXT_PATH"
 
-          # Build and push the Docker image with Buildx
-          docker buildx build --platform linux/amd64,linux/arm64 \
-            -t ${{ secrets.DOCKER_HUB_USERNAME }}/react-app:${{ github.sha }} \
-            -t ${{ secrets.DOCKER_HUB_USERNAME }}/react-app:latest \
-            --push \
-            --file "$DOCKERFILE_PATH" \
+          # Build the Docker image
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:${{ github.sha }} \
+            -f "$DOCKERFILE_PATH" \
             "$CONTEXT_PATH"
+
+          # Push the Docker image
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:${{ github.sha }}
         shell: bash
