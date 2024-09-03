@@ -51,7 +51,7 @@ jobs:
           echo "Using context: $CONTEXT_PATH"
 
           # Build the Docker image
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:${{ github.sha }} \
+          docker build -t bennassermedghassen/my-app:${{ github.sha }} \
             -f "$DOCKERFILE_PATH" \
             "$CONTEXT_PATH"
 
