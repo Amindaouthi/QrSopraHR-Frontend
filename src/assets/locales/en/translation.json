@@ -4,6 +4,7 @@
   "AcP": "Find the best answer to your technical question, help others answer theirs. SopraQR is a community-based space to find and contribute answers to technical challenges.",
   "Get Started": "Get Started",
   "Search": "Search",
+  "added":"added",
   "Ask Question": "Ask Question",
   "Answered": "Answered",
   "Unanswered": "Unanswered",
@@ -147,6 +148,10 @@
   "New Password": "New Password",
   "Enter your new password": "Enter your new password",
   
-  "Update": "Update"
-  
+  "Update": "Update",
+  "My Questions":"My Questions",
+  "My Answers":"My Answers",
+  "My Answers Response":"My Answers Response",
+  "My Statis":"My Statis",
+  "Logout":"Logout"
 }

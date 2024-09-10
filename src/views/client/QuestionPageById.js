@@ -100,7 +100,7 @@ function QuestionsPageById() {
   const { t } = useTranslation();
   const [question, setQuestion] = useState(null);
   const [answer, setAnswer] = useState('');
-  const [ setAnswers] = useState([]);
+  const [answers, setAnswers] = useState([]);
   const { questionId } = useParams();
   
   const [file, setFile] = useState(null);
@@ -119,7 +119,7 @@ function QuestionsPageById() {
   
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
-
+  const [response, setResponse] = useState("1");
   // Function to count votes based on value
   const calculateTotalVotes = () => {
     if (Array.isArray(question.votes)) {
@@ -182,7 +182,7 @@ function QuestionsPageById() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
+    setResponse("2")
     try {
       const token = localStorage.getItem('token');
       const formData = new FormData();
@@ -206,11 +206,14 @@ function QuestionsPageById() {
             Authorization: `Bearer ${token}`,
           },
         },
-      );
+      ).then((res)=>{
+        console.log(res.data)
+      });
 
       setAnswer('');
       setFile(null);
       setFilePreview(null);
+      setResponse("3")
       window.location.reload();
     } catch (error) {
       console.error('Error posting answer:', error.message);
@@ -339,41 +342,48 @@ function QuestionsPageById() {
   const handleAnswerLike = async (answerId) => {
     try {
       const voteResponse = await like('Answer', answerId, userId);
-      setAnswers((prevAnswers) =>
-        prevAnswers.map((answer) =>
-          answer.id === answerId ? { ...answer, votes: voteResponse.updatedVotes } : answer,
-        ),
-      );
-      Swal.fire('Vote enregistré !', 'Votre like a été pris en compte.', 'success');
-      refreshPage();
+      if (voteResponse && voteResponse.updatedVotes !== undefined) {
+        // Fetch updated data instead of refreshing the page
+        await fetchQuestionById(); // Fetch the latest question and answers to update state
+        Swal.fire('Vote enregistré !', 'Votre like a été pris en compte.', 'success');
+      } else {
+        throw new Error('Unexpected API response format.');
+      }
     } catch (error) {
+      console.error('Error during like operation:', error);
       Swal.fire('Erreur!', 'Une erreur est survenue lors du like.', 'error');
     }
-    
   };
-  useEffect(() => {
-    fetchQuestionById();
-  }, [questionId]);
-
-  // Handler pour disliker une réponse
+  
   const handleAnswerDislike = async (answerId) => {
     try {
       const voteResponse = await dislike('Answer', answerId, userId);
-      setAnswers((prevAnswers) =>
-        prevAnswers.map((answer) =>
-          answer.id === answerId ? { ...answer, votes: voteResponse.updatedVotes } : answer,
-        ),
-      );
-      Swal.fire('Vote enregistré !', 'Votre dislike a été pris en compte.', 'success');
-      refreshPage();
+      if (voteResponse && voteResponse.updatedVotes !== undefined) {
+        // Fetch updated data instead of refreshing the page
+        await fetchQuestionById(); // Fetch the latest question and answers to update state
+        Swal.fire('Vote enregistré !', 'Votre dislike a été pris en compte.', 'success');
+      } else {
+        throw new Error('Unexpected API response format.');
+      }
     } catch (error) {
+      console.error('Error during dislike operation:', error);
       Swal.fire('Erreur!', 'Une erreur est survenue lors du dislike.', 'error');
     }
-    
   };
+  
   useEffect(() => {
-    fetchQuestionById();
+    const fetchQuestion = async () => {
+      try {
+        await fetchQuestionById(); // Ensure this function updates the state correctly
+      } catch (error) {
+        console.error('Error fetching question:', error);
+      }
+    };
+  
+    fetchQuestion();
   }, [questionId]);
+  
+  
 
   const handleClickOutside = (event) => {
     if (replyFormRef.current && !replyFormRef.current.contains(event.target)) {
@@ -580,9 +590,10 @@ function QuestionsPageById() {
       <NewNavbar />
       <Container>
         <GlobalStyle />
+        {response === "2" ? <div style={{position:"absolute",top:"500px", right : "70px" , fontSize : "50px"}}> loading ... </div> : ""}
         {question && (
           <div className="mt-150 mb-150">
-            <div className="container">
+           <div className="container">
               <div className="row">
                 <div className="col-lg-8">
                   <div className="single-article-section">
@@ -1096,7 +1107,7 @@ function QuestionsPageById() {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> 
           </div>
         )}
       </Container>

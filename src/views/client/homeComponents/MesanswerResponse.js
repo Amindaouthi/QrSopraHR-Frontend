@@ -101,6 +101,17 @@ const AnswersResponsePage = () => {
   const navigate = useNavigate();
 
   const fetchAnswers = async () => {
+    // Validate userId and accessToken
+    if (!userId || isNaN(userId)) {
+      console.error('Invalid or missing user ID');
+      return;
+    }
+
+    if (!accessToken) {
+      console.error('Missing access token');
+      return;
+    }
+
     try {
       const response = await axios.get(
         `http://localhost:8080/api/questions/answersbyuseranddaterange?userId=${userId}&startDate=${startDate}&endDate=${endDate}`,
@@ -116,7 +127,7 @@ const AnswersResponsePage = () => {
       MySwal.fire({
         title: t('Error!'),
         text: t('Failed to fetch answers.'),
-        icon: 'error'
+        icon: 'error',
       });
     }
   };
@@ -134,6 +145,12 @@ const AnswersResponsePage = () => {
   };
 
   const handleEditClick = async (questionId, answerId) => {
+    // Validate IDs before proceeding
+    if (!questionId || isNaN(questionId) || !answerId || isNaN(answerId)) {
+      console.error('Invalid questionId or answerId for edit');
+      return;
+    }
+
     const selected = answers.find((answer) => answer.id === answerId);
     if (!selected) {
       console.error(`Answer with id ${answerId} not found.`);
@@ -189,7 +206,7 @@ const AnswersResponsePage = () => {
         MySwal.fire({
           title: t('Updated!'),
           text: t('Your answer has been updated.'),
-          icon: 'success'
+          icon: 'success',
         });
         fetchAnswers(); 
       } catch (error) {
@@ -197,14 +214,15 @@ const AnswersResponsePage = () => {
         MySwal.fire({
           title: t('Error!'),
           text: t('Failed to update answer.'),
-          icon: 'error'
+          icon: 'error',
         });
       }
     }
   };
 
   const handleDeleteClick = async (answerId, questionId) => {
-    if (!answerId || !questionId) {
+    // Validate IDs before proceeding
+    if (!answerId || isNaN(answerId) || !questionId || isNaN(questionId)) {
       console.error('Invalid questionId or answerId for delete');
       return;
     }
@@ -216,7 +234,7 @@ const AnswersResponsePage = () => {
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: t('Yes, delete it!')
+      confirmButtonText: t('Yes, delete it!'),
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
@@ -232,14 +250,14 @@ const AnswersResponsePage = () => {
           MySwal.fire({
             title: t('Deleted!'),
             text: t('Your answer has been deleted.'),
-            icon: 'success'
+            icon: 'success',
           });
         } catch (error) {
           console.error('Error deleting answer:', error);
           MySwal.fire({
             title: t('Error!'),
             text: t('Failed to delete answer.'),
-            icon: 'error'
+            icon: 'error',
           });
         }
       }
@@ -247,6 +265,10 @@ const AnswersResponsePage = () => {
   };
 
   const handleAnswerClick = (questionId) => {
+    if (!questionId || isNaN(questionId)) {
+      console.error('Invalid questionId');
+      return;
+    }
     navigate(`/client/question/${questionId}`);
   };
 

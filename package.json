@@ -49,6 +49,7 @@
     "react-router-dom": "^6.3.0",
     "react-scripts": "5.0.1",
     "react-select": "^5.8.0",
+    "react-spinners": "^0.14.1",
     "react-spring": "^9.2.4",
     "recharts": "^2.12.7",
     "remark-gfm": "^4.0.0",

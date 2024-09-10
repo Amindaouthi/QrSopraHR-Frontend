@@ -11,7 +11,7 @@ import Select from 'react-select';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Darkmode from 'darkmode-js';
+
 import '../homeComponents/QuestionsPage.css';
 import { useTranslation } from 'react-i18next';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons'
@@ -195,7 +195,7 @@ const QuestionsPage = () => {
   const [searchTitle, setSearchTitle] = useState('');
   const [selectedUser, setSelectedUser] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
-  const [mode, setMode] = useState('light'); // Default mode is light
+  
   const [isFavorite, setIsFavorite] = useState(false);
   const [isModerator, setIsModerator] = useState(false); 
   
@@ -210,10 +210,7 @@ const QuestionsPage = () => {
     return `${day}/${month}/${year} ${hours}:${minutes}`;
   };
 
-  const toggleMode = () => {
-    const newMode = mode === 'light' ? 'dark' : 'light';
-    setMode(newMode);
-  };
+  
 
   const votreToken = localStorage.getItem('token');
 
@@ -314,24 +311,9 @@ const QuestionsPage = () => {
   }
 };*/
 
-useEffect(() => {
-  const options = {
-    bottom: '64px',
-    right: 'unset',
-    left: '32px',
-    time: '0.5s',
-    mixColor: '#fff',
-    backgroundColor: '#fff',
-    buttonColorDark: '#100f2c',
-    buttonColorLight: '#fff',
-    saveInCookies: true,
-    label: '🌓',
-    autoMatchOsTheme: true
-  };
 
-  const darkmode = new Darkmode(options);
-  darkmode.showWidget();
-}, []);
+
+  
 
     
   const fetchQuestionData = async (questionId) => {

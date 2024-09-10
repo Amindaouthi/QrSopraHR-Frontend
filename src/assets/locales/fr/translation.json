@@ -148,6 +148,11 @@
   "New Password": "Nouveau mot de passe",
   "Enter your new password": "Entrez votre nouveau mot de passe",
   
-  "Update": "Mettre à jour"
-  
+  "Update": "Mettre à jour",
+  "My Questions":"Mes questions",
+  "My Answers":"Mes réponses",
+  "My Answers Response":"Mes réponses a réponse",
+  "My Statis":"Mes statistiques",
+  "Logout":"Déconnexion",
+  "added":"ajouté"
 }

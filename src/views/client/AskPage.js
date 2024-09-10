@@ -226,7 +226,7 @@ const AskPage = () => {
                 onChange={(e) => setIsAnonymous(e.target.checked)}
               />
               <label className="form-check-label" htmlFor="anonymousCheckbox">
-                <FontAwesomeIcon icon={faUserSecret} style={{ marginRight: '5px' }} />
+                <FontAwesomeIcon icon={faUserSecret} style={{ marginLeft: '5px' ,marginTop:"8px",marginRight: '5px'}} />
                 Rester anonyme
               </label>
             </div>

@@ -13,35 +13,3 @@ body {
   transition: color 0.5s, background-color 0.5s;
 }
 
-body.lightmode {
-  color: #000; /* Default text color for light mode */
-  background-color: #fff; /* Default background color for light mode */
-}
-
-body.lightmode .button {
-  color: #000; /* Button text color for light mode */
-  background-color: #fff; /* Button background color for light mode */
-}
-
-body.darkmode {
-  color: red; /* Text color for dark mode */
-  background-color: #000; /* Background color for dark mode */
-}
-
-body.darkmode p, body.darkmode li, body.darkmode h1, body.darkmode h2, body.darkmode h3, body.darkmode h4, body.darkmode h5, body.darkmode h6 {
-  color: red; /* Text color for dark mode */
-}
-
-body.darkmode .button {
-  color: white; /* Button text color for dark mode */
-  background-color: red; /* Button background color for dark mode */
-  border: 1px solid white; /* Optional: add a border for better visibility */
-}
-
-.darkmode--activated .logo {
-  mix-blend-mode: difference;
-}
-
-.darkmode-layer, .darkmode-toggle {
-  z-index: 500;
-}
