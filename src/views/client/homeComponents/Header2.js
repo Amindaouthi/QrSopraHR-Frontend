@@ -16,11 +16,11 @@ const {t}=useTranslation();
     try {
       let response;
       if (activeFilter === 'answered') {
-        response = await axios.get('http://localhost:8080/api/questions/questionsWithAnswers');
+        response = await axios.get('http://localhost:8082/api/questions/questionsWithAnswers');
       } else if (activeFilter === 'unanswered') {
-        response = await axios.get('http://localhost:8080/api/questions/questionsWithoutAnswers');
+        response = await axios.get('http://localhost:8082/api/questions/questionsWithoutAnswers');
       } else if (activeFilter === 'votes') {
-        response = await axios.get('http://localhost:8080/api/questions/sorted-by-votes');
+        response = await axios.get('http://localhost:8082/api/questions/sorted-by-votes');
       }
 
       const questions = response.data;

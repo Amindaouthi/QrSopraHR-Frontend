@@ -114,7 +114,7 @@ const AnswersResponsePage = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/questions/answersbyuseranddaterange?userId=${userId}&startDate=${startDate}&endDate=${endDate}`,
+        `http://localhost:8082/api/questions/answersbyuseranddaterange?userId=${userId}&startDate=${startDate}&endDate=${endDate}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -194,7 +194,7 @@ const AnswersResponsePage = () => {
 
       try {
         await axios.put(
-          `http://localhost:8080/api/questions/${questionId}/answers/${answerId}`,
+          `http://localhost:8082/api/questions/${questionId}/answers/${answerId}`,
           updateFormData,
           {
             headers: {
@@ -239,7 +239,7 @@ const AnswersResponsePage = () => {
       if (result.isConfirmed) {
         try {
           await axios.delete(
-            `http://localhost:8080/api/questions/${questionId}/answers/${answerId}`,
+            `http://localhost:8082/api/questions/${questionId}/answers/${answerId}`,
             {
               headers: {
                 Authorization: `Bearer ${accessToken}`,

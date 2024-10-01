@@ -22,7 +22,7 @@ const NewNavbar = () => {
     const fetchNotifications = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8080/api/notifications/me', {
+        const response = await axios.get('http://localhost:8082/api/notifications/me', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -51,7 +51,7 @@ const NewNavbar = () => {
     if (!showNotifications) {
       // Marquer toutes les notifications comme lues lorsque le dropdown est ouvert
       const token = localStorage.getItem('token');
-      axios.put('http://localhost:8080/api/notifications/mark-all-as-read', null, {
+      axios.put('http://localhost:8082/api/notifications/mark-all-as-read', null, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -67,7 +67,7 @@ const NewNavbar = () => {
   const markNotificationAsRead = async (notificationId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:8080/api/notifications/${notificationId}`, null, {
+      await axios.put(`http://localhost:8082/api/notifications/${notificationId}`, null, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

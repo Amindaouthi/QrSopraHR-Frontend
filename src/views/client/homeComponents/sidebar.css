@@ -3,7 +3,7 @@ body, html {
    height: 100%;
    margin: 0;
    font-family: Arial, sans-serif; /* Ensure a consistent font across the page */
-   background-color: #f4f4f4; /* Slightly off-white background for the entire page */
+   background-color: #fff; /* Slightly off-white background for the entire page */
    color: #333; /* Default text color */
 }
 

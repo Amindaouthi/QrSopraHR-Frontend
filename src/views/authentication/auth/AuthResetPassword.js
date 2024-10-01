@@ -20,7 +20,7 @@ const AuthResetPassword = ({ subtext }) => {
       
           try {
               // Attempt to send the reset password request
-              await axios.post('http://localhost:8080/api/auth/reset-password', {
+              await axios.post('http://localhost:8082/api/auth/reset-password', {
                   email: email,
                   oldPassword: oldPassword,
                   newPassword: newPassword,

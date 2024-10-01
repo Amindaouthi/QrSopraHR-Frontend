@@ -8,6 +8,13 @@ import { useLocation } from 'react-router-dom';
 import { SlBadge } from 'react-icons/sl'; // Import SlBadge icon
 import { useTranslation } from 'react-i18next';
 
+
+const CustomLine = styled.div`
+  width: 100%; /* Full width */
+  height: 2px; /* Line thickness */
+  background-color: #ccc; /* Line color */
+  margin: 20px 0; /* Spacing around the line */
+`;
 // Styled components
 const PageContainer = styled.div`
   display: flex;
@@ -124,6 +131,7 @@ const HorizontalLine = styled.hr`
   margin-top: 20px;
   border: 1px solid #1f1c1f;
 `;
+
 const H2 = styled.h2`
   font-size: 2em; /* Adjust the size as needed */
   font-weight: bold;
@@ -163,59 +171,79 @@ const ChartComponent = () => {
   const [userPoints, setUserPoints] = useState(0);
   const [userImage, setUserImage] = useState('');
   const { t } = useTranslation();
-
+  const [userSince, setUserSince] = useState('No questions created yet'); // Default value for "User since"
   useEffect(() => {
     if (id) {
       const fetchData = async () => {
         try {
           // Fetch user info
-          const userResponse = await axios.get(`http://localhost:8080/api/user/${id}`);
+          const userResponse = await axios.get(`http://localhost:8082/api/user/${id}`);
           setUserName(userResponse.data.username);
           setUserPoints(userResponse.data.reputation.score);
-          setUserImage(userResponse.data.imageBase64 || ''); // Set fallback to empty string
-
-          // Fetch all data from a single API endpoint
-          const response = await axios.get('http://localhost:8080/api/questions', {
+          setUserImage(userResponse.data.imageBase64 || '');
+  
+          // Fetch questions data from the new endpoint
+          const questionsResponse = await axios.get('http://localhost:8082/api/questions/by-user-and-date', {
             params: {
               userId: id,
               startDate: '2024-01-01',
               endDate: '2024-12-31',
             },
           });
-
-          const data = response.data;
-
+  
+          const data = questionsResponse.data;
+  
           const questionsCounts = Array(12).fill(0);
           const answersCounts = Array(12).fill(0);
           const responsesCounts = Array(12).fill(0);
-
+  
           data.forEach((question) => {
             const questionMonth = new Date(question.createdAt).getMonth();
             questionsCounts[questionMonth] += 1;
-
+  
             question.answers.forEach((answer) => {
               const answerMonth = new Date(answer.createdAt).getMonth();
               answersCounts[answerMonth] += 1;
-
+  
               answer.responses.forEach((response) => {
                 const responseMonth = new Date(response.createdAt).getMonth();
                 responsesCounts[responseMonth] += 1;
               });
             });
           });
-
+  
           setQuestionsData(questionsCounts);
-          setAnswersData(answersCounts);
           setResponsesData(responsesCounts);
         } catch (error) {
-          console.error('Error fetching data:', error);
+          console.error('Error fetching user data or questions:', error);
+        }
+  
+        // Fetch answers data from the new endpoint
+        try {
+          const answersResponse = await axios.get('http://localhost:8082/api/questions/byuseranddate', {
+            params: {
+              userId: id,
+              startDate: '2024-01-01',
+              endDate: '2024-12-31',
+            },
+          });
+  
+          const answersDataByMonth = Array(12).fill(0);
+          answersResponse.data.forEach((answer) => {
+            const answerMonth = new Date(answer.createdAt).getMonth();
+            answersDataByMonth[answerMonth] += 1;
+          });
+  
+          setAnswersData(answersDataByMonth);
+        } catch (error) {
+          console.error('Error fetching answers data:', error);
         }
       };
-
+  
       fetchData();
     }
   }, [id]);
-
+  
   // Define different colors for each chart
   const CHART_COLORS = {
     questions: '#007bff', // Blue
@@ -247,122 +275,257 @@ const ChartComponent = () => {
     <PageContainer>
       <NewNavbar />
       <ContentContainer>
-        <Sidebar style={{ height: '100%' }} />
-        <MainContent>
-          <ProfileSection>
-            <ProfileIcon>
-              <img
-                src={
-                  userImage
-                    ? `data:image/jpeg;base64,${userImage}`
-                    : 'https://bootdey.com/img/Content/avatar/avatar7.png'
-                }
-                alt="User Profile"
-              />
-            </ProfileIcon>
-            <div>
-              <UserInfo>
-                <UserInfoTitle>{userName}</UserInfoTitle>
-                <UserInfoDetail>
-                  {t('User since:')} {formatDate('2024-01-01')}
-                </UserInfoDetail>
-                <UserInfoDetail>Points: {userPoints}</UserInfoDetail>
-              </UserInfo>
-              <BadgeSection>
-                {badges.gold && <Badge as={SlBadge} color="#ffd700" active />}
-                {badges.silver && !badges.gold && <Badge as={SlBadge} color="#c0c0c0" active />}
-                {badges.bronze && !badges.silver && !badges.gold && (
-                  <Badge as={SlBadge} color="#cd7f32" active />
-                )}
-              </BadgeSection>
-            </div>
-          </ProfileSection>
-          <HorizontalLine />
-          <ChartsContainer>
-            <H2>
-              {userName} {t('States')}
-            </H2>
-            <TopChartsRow>
-              <ChartWrapper>
-                <ChartTitle>{t('Total Questions by Month')}</ChartTitle>
-                <ChartSubtitle>{t('Monthly distribution of questions')}</ChartSubtitle>
-                <ApexCharts
-                  options={{
-                    xaxis: {
-                      categories: Array.from({ length: 12 }, (_, i) =>
-                        new Date(0, i).toLocaleString('en', { month: 'short' }),
-                      ),
-                    },
-                    colors: [CHART_COLORS.questions],
-                    dataLabels: {
-                      enabled: true,
-                    },
-                    tooltip: {
-                      theme: 'dark',
-                    },
-                    responsive: [{ breakpoint: 480, options: { legend: { position: 'bottom' } } }],
-                  }}
-                  series={[{ name: 'Questions', data: questionsData }]}
-                  type="bar"
-                  height={300}
-                />
-              </ChartWrapper>
+  <Sidebar style={{ height: '100%' }} />
+  <MainContent>
+    <ProfileSection>
+      <ProfileIcon>
+        <img
+          src={
+            userImage
+              ? `data:image/jpeg;base64,${userImage}`
+              : 'https://bootdey.com/img/Content/avatar/avatar7.png'
+          }
+          alt="User Profile"
+        />
+      </ProfileIcon>
+      <div>
+        <UserInfo>
+          <UserInfoTitle>{userName}</UserInfoTitle>
+          <UserInfoDetail>
+            {t('User since:')} {formatDate('2024-01-01')}
+          </UserInfoDetail>
+          <UserInfoDetail>Points: {userPoints}</UserInfoDetail>
+        </UserInfo>
+        <BadgeSection>
+  {badges.gold && <Badge as={SlBadge} color="#ffd700" active />}
+  {!badges.gold && badges.silver && <Badge as={SlBadge} color="#c0c0c0" active />}
+  {!badges.gold && !badges.silver && badges.bronze && <Badge as={SlBadge} color="#cd7f32" active />}
+</BadgeSection>
 
-              <ChartWrapper>
-              <ChartTitle>{t('Total Answers by Month')}</ChartTitle>
-              <ChartSubtitle>{t('Monthly distribution of answers')}</ChartSubtitle>
-                <ApexCharts
-                  options={{
-                    xaxis: {
-                      categories: Array.from({ length: 12 }, (_, i) =>
-                        new Date(0, i).toLocaleString('en', { month: 'short' }),
-                      ),
-                    },
-                    colors: [CHART_COLORS.answers],
-                    dataLabels: {
-                      enabled: true,
-                    },
-                    tooltip: {
-                      theme: 'dark',
-                    },
-                    responsive: [{ breakpoint: 480, options: { legend: { position: 'bottom' } } }],
-                  }}
-                  series={[{ name: 'Answers', data: answersData }]}
-                  type="bar"
-                  height={300}
-                />
-              </ChartWrapper>
-            </TopChartsRow>
+      </div>
+    </ProfileSection>
 
-            <ChartWrapper>
-            <ChartTitle>{t('Total Responses by Month')}</ChartTitle>
-            <ChartSubtitle>{t('Monthly distribution of responses')}</ChartSubtitle>
-              <ApexCharts
-                options={{
-                  xaxis: {
-                    categories: Array.from({ length: 12 }, (_, i) =>
-                      new Date(0, i).toLocaleString('en', { month: 'short' }),
-                    ),
+    <ChartsContainer>
+      <H2>
+        {userName} {t('Stats')}
+        </H2>
+        <CustomLine />
+             <TopChartsRow>
+        <ChartWrapper>
+          <ChartTitle>{t('Total Questions by Month')}</ChartTitle>
+          <ChartSubtitle>{t('Monthly distribution of questions')}</ChartSubtitle>
+          <ApexCharts
+            options={{
+              chart: {
+                type: 'line',
+                toolbar: { show: false },
+              },
+              xaxis: {
+                categories: Array.from({ length: 12 }, (_, i) =>
+                  new Date(0, i).toLocaleString('en', { month: 'short' })
+                ),
+              },
+              yaxis: {
+                title: {
+                  style: {
+                    fontSize: '14px',
+                    color: '#333',
                   },
-                  colors: [CHART_COLORS.responses],
-                  dataLabels: {
-                    enabled: true,
+                },
+              },
+              colors: [CHART_COLORS.questions],
+              dataLabels: {
+                enabled: true,
+                formatter: (val) => (val === 0 ? '' : val), // Hide labels when value is 0
+                style: {
+                  fontSize: '15px',
+                  colors: ['#fff'],
+                },
+                dropShadow: {
+                  enabled: true,
+                  top: 1,
+                  left: 1,
+                  color: '#000',
+                  opacity: 0.5,
+                  blur: 1,
+                },
+              },
+              tooltip: {
+                theme: 'dark',
+                style: {
+                  fontSize: '12px',
+                },
+                marker: {
+                  show: true,
+                },
+              },
+              stroke: {
+                curve: 'smooth', // Smooth line curve
+                width: 3, // Increased line width for better visibility
+              },
+              markers: {
+                size: 5, // Marker size
+                colors: ['#fff'], // Marker fill color
+                strokeColors: [CHART_COLORS.questions], // Marker stroke color
+                strokeWidth: 2, // Marker stroke width
+                hover: {
+                  size: 6, // Marker size on hover
+                },
+              },
+              responsive: [{ breakpoint: 480, options: { legend: { position: 'bottom' } } }],
+            }}
+            series={[{ name: 'Questions', data: questionsData }]}
+            type="line"
+            height={300}
+          />
+        </ChartWrapper>
+
+        <ChartWrapper>
+          <ChartTitle>{t('Total Answers by Month')}</ChartTitle>
+          <ChartSubtitle>{t('Monthly distribution of answers')}</ChartSubtitle>
+          <ApexCharts
+            options={{
+              chart: {
+                type: 'line',
+                toolbar: { show: false },
+              },
+              xaxis: {
+                categories: Array.from({ length: 12 }, (_, i) =>
+                  new Date(0, i).toLocaleString('en', { month: 'short' })
+                ),
+              },
+              yaxis: {
+                title: {
+                  style: {
+                    fontSize: '14px',
+                    color: '#333',
                   },
-                  tooltip: {
-                    theme: 'dark',
-                  },
-                  responsive: [{ breakpoint: 480, options: { legend: { position: 'bottom' } } }],
-                }}
-                series={[{ name: 'Responses', data: responsesData }]}
-                type="bar"
-                height={300}
-              />
-            </ChartWrapper>
-          </ChartsContainer>
-        </MainContent>
-      </ContentContainer>
+                },
+              },
+              colors: [CHART_COLORS.answers],
+              dataLabels: {
+                enabled: true,
+                formatter: (val) => (val === 0 ? '' : val), // Hide labels when value is 0
+                style: {
+                  fontSize: '15px',
+                  colors: ['#fff'],
+                },
+                dropShadow: {
+                  enabled: true,
+                  top: 1,
+                  left: 1,
+                  color: '#000',
+                  opacity: 0.5,
+                  blur: 1,
+                },
+              },
+              tooltip: {
+                theme: 'dark',
+                style: {
+                  fontSize: '12px',
+                },
+                marker: {
+                  show: true,
+                },
+              },
+              stroke: {
+                curve: 'smooth',
+                width: 4,
+              },
+              markers: {
+                size: 5,
+                colors: ['#fff'],
+                strokeColors: [CHART_COLORS.answers],
+                strokeWidth: 2,
+                hover: {
+                  size: 6,
+                },
+              },
+              responsive: [{ breakpoint: 480, options: { legend: { position: 'bottom' } } }],
+            }}
+            series={[{ name: 'Answers', data: answersData }]}
+            type="line"
+            height={300}
+          />
+        </ChartWrapper>
+      </TopChartsRow>
+
+      <ChartWrapper>
+        <ChartTitle>{t('Total Responses by Month')}</ChartTitle>
+        <ChartSubtitle>{t('Monthly distribution of responses')}</ChartSubtitle>
+        <ApexCharts
+          options={{
+            chart: {
+              type: 'line',
+              toolbar: { show: false },
+            },
+            xaxis: {
+              categories: Array.from({ length: 12 }, (_, i) =>
+                new Date(0, i).toLocaleString('en', { month: 'short' })
+              ),
+            },
+            yaxis: {
+        
+              title: {
+                style: {
+                  fontSize: '14px',
+                  color: '#333',
+                },
+              },
+            },
+            colors: [CHART_COLORS.responses],
+            dataLabels: {
+              enabled: true,
+              formatter: (val) => (val === 0 ? '' : val), // Hide labels when value is 0
+              style: {
+                fontSize: '15px',
+                colors: ['#fff'],
+              },
+              dropShadow: {
+                enabled: true,
+                top: 1,
+                left: 1,
+                color: '#000',
+                opacity: 0.5,
+                blur: 1,
+              },
+            },
+            tooltip: {
+              theme: 'dark',
+              style: {
+                fontSize: '12px',
+              },
+              marker: {
+                show: true,
+              },
+            },
+            stroke: {
+              curve: 'smooth',
+              width: 3,
+            },
+            markers: {
+              size: 5,
+              colors: ['#fff'],
+              strokeColors: [CHART_COLORS.responses],
+              strokeWidth: 2,
+              hover: {
+                size: 6,
+              },
+            },
+            responsive: [{ breakpoint: 480, options: { legend: { position: 'bottom' } } }],
+          }}
+          series={[{ name: 'Responses', data: responsesData }]}
+          type="line"
+          height={300}
+        />
+      </ChartWrapper>
+    </ChartsContainer>
+  </MainContent>
+</ContentContainer>
+
     </PageContainer>
   );
+  
 };
 
 export default ChartComponent;

@@ -25,7 +25,7 @@ const ListQuestions = () => {
 
   useEffect(() => {
     axios
-      .get('http://localhost:8080/api/questions')
+      .get('http://localhost:8082/api/questions')
       .then((response) => {
         setQuestions(response.data);
       })
@@ -48,7 +48,7 @@ const ListQuestions = () => {
       });
 
       if (result.isConfirmed) {
-        await axios.delete(`http://localhost:8080/api/questions/${questionId}`);
+        await axios.delete(`http://localhost:8082/api/questions/${questionId}`);
 
         await Swal.fire({
           icon: 'success',

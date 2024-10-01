@@ -76,7 +76,7 @@ function QuestionWithAnswer(){
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
-                const response = await axios.get('http://localhost:8080/api/questions/questionsWithoutAnswers');
+                const response = await axios.get('http://localhost:8082/api/questions/questionsWithoutAnswers');
                 setQuestionData(response.data);
                 console.log(response.data.user_id)
             } catch (error) {

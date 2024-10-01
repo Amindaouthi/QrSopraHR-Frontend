@@ -104,7 +104,7 @@ const AnswersPage = () => {
   const fetchAnswers = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/questions/byuseranddate?userId=${userId}&startDate=${startDate}&endDate=${endDate}`,
+        `http://localhost:8082/api/questions/byuseranddate?userId=${userId}&startDate=${startDate}&endDate=${endDate}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -173,7 +173,7 @@ const AnswersPage = () => {
 
       try {
         await axios.put(
-          `http://localhost:8080/api/questions/${questionId}/answers/${answerId}`,
+          `http://localhost:8082/api/questions/${questionId}/answers/${answerId}`,
           updateFormData,
           {
             headers: {
@@ -217,7 +217,7 @@ const AnswersPage = () => {
       if (result.isConfirmed) {
         try {
           await axios.delete(
-            `http://localhost:8080/api/questions/${questionId}/answers/${answerId}`,
+            `http://localhost:8082/api/questions/${questionId}/answers/${answerId}`,
             {
               headers: {
                 Authorization: `Bearer ${accessToken}`,
@@ -266,7 +266,7 @@ const AnswersPage = () => {
         <Sidebar className="h-100" />
 
         <div style={{ flex: 1 }}>
-        <H2>{t('My Response')}</H2>
+        <H2>{t('My answers')}</H2>
           <div style={{ padding: '20px', marginTop: '10px' }}>
             <DateInputsContainer style={{ marginLeft: '25%' }}>
               <div>

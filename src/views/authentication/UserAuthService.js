@@ -3,7 +3,7 @@ import axios from 'axios';
 class UserAuthService {
   async login(username, password) {
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/signin', {
+      const response = await axios.post('http://localhost:8082/api/auth/signin', {
         username,
         password
       });
@@ -40,7 +40,7 @@ class UserAuthService {
   async getUserInfo() {
     try {
       const userId = this.getUserId(); // Supposons que vous avez une méthode pour obtenir l'ID de l'utilisateur
-      const response = await axios.get(`http://localhost:8080/api/user-roles/${userId}`, {
+      const response = await axios.get(`http://localhost:8082/api/user-roles/${userId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }

@@ -14,7 +14,11 @@ import UserAvatar from './UserAvatar';
 import { FaLink } from 'react-icons/fa';
 import { IoIosCheckmarkCircleOutline } from 'react-icons/io';
 import Swal from 'sweetalert2';
-import { like, dislike, getVoteStatus } from './voteService'; // Import des services de vote
+import { like, dislike, getVoteStatus } from './voteService'; 
+import { FadeLoader } from 'react-spinners';
+import Sidebar from './homeComponents/sidebar';
+
+
 const GlobalStyle = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=PlusJakartaSans:wght@300,400;700&display=swap');
   body {
@@ -197,7 +201,7 @@ function QuestionsPageById() {
       });
 
       await axios.post(
-        `http://localhost:8080/api/questions/${questionId}/answers`,
+        `http://localhost:8082/api/questions/${questionId}/answers`,
         formData,
 
         {
@@ -230,7 +234,7 @@ function QuestionsPageById() {
   const fetchQuestionById = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:8080/api/questions/${questionId}`, {
+      const response = await axios.get(`http://localhost:8082/api/questions/${questionId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -265,7 +269,7 @@ function QuestionsPageById() {
   useEffect(() => {
     const incrementView = async () => {
       try {
-        await axios.put(`http://localhost:8080/api/questions/${questionId}/increment-view`);
+        await axios.put(`http://localhost:8082/api/questions/${questionId}/increment-view`);
         console.log('View count incremented successfully.');
       } catch (error) {
         console.error('Error incrementing view count:', error);
@@ -293,7 +297,7 @@ function QuestionsPageById() {
       }
 
       const response = await axios.post(
-        `http://localhost:8080/api/questions/${questionId}/answers/${parentAnswerId}/responses`,
+        `http://localhost:8082/api/questions/${questionId}/answers/${parentAnswerId}/responses`,
         { content: replyContent },
         {
           headers: {
@@ -402,7 +406,7 @@ function QuestionsPageById() {
     const fetchAnswers = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/questions/${questionId}/answers`,
+          `http://localhost:8082/api/questions/${questionId}/answers`,
         );
         setAnswers(response.data);
       } catch (error) {
@@ -432,7 +436,7 @@ function QuestionsPageById() {
 
       try {
         const response = await axios.put(
-          `http://localhost:8080/api/questions/${answerId}/accept`,
+          `http://localhost:8082/api/questions/${answerId}/accept`,
           {},
           {
             headers: {
@@ -479,7 +483,7 @@ function QuestionsPageById() {
 
       try {
         const response = await axios.put(
-          `http://localhost:8080/api/questions/${answerId}/unaccept`,
+          `http://localhost:8082/api/questions/${answerId}/unaccept`,
           {},
           {
             headers: {
@@ -539,7 +543,7 @@ function QuestionsPageById() {
     if (result.isConfirmed) {
       try {
         await axios.delete(
-          `http://localhost:8080/api/questions/${questionId}/answers/${answerId}`,
+          `http://localhost:8082/api/questions/${questionId}/answers/${answerId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`, // Include the token in the Authorization header
@@ -569,7 +573,7 @@ function QuestionsPageById() {
     if (result.isConfirmed) {
       try {
         await axios.delete(
-          `http://localhost:8080/api/questions/${questionId}/answers/${parentAnswerId}/responses/${responseId}`,
+          `http://localhost:8082/api/questions/${questionId}/answers/${parentAnswerId}/responses/${responseId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -587,13 +591,22 @@ function QuestionsPageById() {
 
   return (
     <>
-      <NewNavbar />
-      <Container>
-        <GlobalStyle />
-        {response === "2" ? <div style={{position:"absolute",top:"500px", right : "70px" , fontSize : "50px"}}> loading ... </div> : ""}
+    <NewNavbar />
+    <GlobalStyle />
+    <div style={{ display: 'flex' }}>
+      <Sidebar className='h-100' style={{ flex: '0 0 250px', background: '#f4f4f4', padding: '20px' }} />
+      <Container style={{ flex: '1', padding: '20px' }}>
+        {response === "2" && (
+          <div style={{
+            position: "absolute", top: "50%", right: "50%", transform: "translate(50%, -50%)",
+            fontSize: "50px", display: "flex", alignItems: "center", justifyContent: "center"
+          }}>
+            <FadeLoader color="#f22c03" height={28} loading margin={4} radius={5} speedMultiplier={0} width={5} />
+          </div>
+        )}
         {question && (
           <div className="mt-150 mb-150">
-           <div className="container">
+            <div className="container">
               <div className="row">
                 <div className="col-lg-8">
                   <div className="single-article-section">
@@ -604,15 +617,9 @@ function QuestionsPageById() {
                           <i className="fas fa-user" />{' '}
                         </span>
                         {question.file && (
-                          <div
-                            className="file"
-                            style={{
-                              backgroundSize: 'cover',
-                              backgroundPosition: 'center',
-                              borderRadius: '5px',
-                              marginTop: '50px',
-                            }}
-                          >
+                          <div className="file" style={{
+                            backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: '5px', marginTop: '50px'
+                          }}>
                             {/* Display file based on content type */}
                             {question.contentType === 'application/pdf' && (
                               <embed
@@ -622,8 +629,6 @@ function QuestionsPageById() {
                                 height="400px"
                               />
                             )}
-
-                            {/* Handling PNG files */}
                             {question.contentType === 'image/png' && (
                               <embed
                                 src={`data:image/png;base64,${question.file}`}
@@ -635,8 +640,6 @@ function QuestionsPageById() {
                                 }
                               />
                             )}
-
-                            {/* Handling JPEG files */}
                             {question.contentType === 'image/jpeg' && (
                               <embed
                                 src={`data:image/jpeg;base64,${question.file}`}
@@ -648,8 +651,6 @@ function QuestionsPageById() {
                                 }
                               />
                             )}
-
-                            {/* Handling CSV files */}
                             {question.contentType === 'text/csv' && (
                               <embed
                                 src={`data:text/csv;base64,${question.file}`}
@@ -660,40 +661,35 @@ function QuestionsPageById() {
                             )}
                           </div>
                         )}
-
-                        {/* Full-screen image handling */}
                         {isFullScreen && (
                           <div className="overlay" onClick={closeFullScreen}>
                             <img src={fullScreenSrc} alt="Full screen" />
                           </div>
                         )}
-
-                        {/* Vote handling for the question */}
                         <p className="blog-meta">
                           <span>
-                          <FontAwesomeIcon
-        icon={faThumbsUp}
-        onClick={handleLikeClick}
-        style={{ 
-          cursor: 'pointer', 
-          color: liked ? 'green' : 'black',
-          fontSize: '1.5rem'
-        }}
-      />
-      <span style={{ margin: '0 20px', minWidth: '20px', textAlign: 'center' }}>
-      {calculateTotalVotes()}
-      </span>
-      <FontAwesomeIcon
-        icon={faThumbsDown}
-        onClick={handleDislikeClick}
-        style={{ 
-          cursor: 'pointer', 
-          color: disliked ? 'red' : 'black',
-          fontSize: '1.5rem'
-        }}
-      />
+                            <FontAwesomeIcon
+                              icon={faThumbsUp}
+                              onClick={handleLikeClick}
+                              style={{
+                                cursor: 'pointer',
+                                color: liked ? 'green' : 'black',
+                                fontSize: '1.5rem'
+                              }}
+                            />
+                            <span style={{ margin: '0 20px', minWidth: '20px', textAlign: 'center' }}>
+                              {calculateTotalVotes()}
+                            </span>
+                            <FontAwesomeIcon
+                              icon={faThumbsDown}
+                              onClick={handleDislikeClick}
+                              style={{
+                                cursor: 'pointer',
+                                color: disliked ? 'red' : 'black',
+                                fontSize: '1.5rem'
+                              }}
+                            />
                           </span>
-
                           <span className="author">
                             <FontAwesomeIcon
                               icon="user"
@@ -701,12 +697,10 @@ function QuestionsPageById() {
                             />{' '}
                             {question.userAnonymous ? 'Anonyme' : question.username}
                           </span>
-
                           <span className="date">
                             <FontAwesomeIcon icon="calendar" style={{ marginRight: '5px' }} />
                             {new Date(question.createdAt).toLocaleDateString()}
                           </span>
-
                           <span>
                             {t('Updated on:')}{' '}
                             {question.updatedAt
@@ -715,7 +709,6 @@ function QuestionsPageById() {
                           </span>
                         </p>
                       </p>
-
                       <h2 className="title">{question.title}</h2>
                       <p className="content">{question.content}</p>
                       <div className="tags">
@@ -729,20 +722,15 @@ function QuestionsPageById() {
                             ))}
                         </div>
                       </div>
-
                       <div className="comments-list-wrap">
                         <h3 className="comment-count-title">
                           {question.answers && question.answers.length} {t('response')} :
                         </h3>
-
                         <div className="comment-list">
                           {question.answers &&
                             question.answers.map((answer) => (
                               <React.Fragment key={answer.id}>
-                                <div
-                                  className="single-comment-body"
-                                  style={{ marginTop: '10px', marginBottom: '10px' }}
-                                >
+                                <div className="single-comment-body" style={{ marginTop: '10px', marginBottom: '10px' }}>
                                   <div className="comment-user-avatar"></div>
                                   <div className="comment-text-body">
                                     <h4>
@@ -769,82 +757,50 @@ function QuestionsPageById() {
                                         {t('reply')}
                                       </button>
                                     </h4>
-                                    <Cader
-                                      style={{
-                                        padding: '20px',
-                                        backgroundColor: '#f9f9f9',
-                                        borderRadius: '10px',
-                                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                                      }}
-                                    >
+                                    <Cader style={{
+                                      padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '10px',
+                                      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
+                                    }}>
                                       <p
                                         style={{
-                                          color: '#333',
-                                          paddingTop: '10px',
-                                          fontSize: '16px',
-                                          lineHeight: '1.5',
+                                          color: '#333', paddingTop: '10px', fontSize: '16px', lineHeight: '1.5'
                                         }}
                                       >
                                         {answer.content}
                                       </p>
-
-                                      {/* Answer file handling */}
                                       {answer.file && (
                                         <div style={{ marginTop: '20px', textAlign: 'center' }}>
                                           {answer.contentType ? (
-                                            // Check if file type is an image
                                             answer.contentType.startsWith('image/') ? (
                                               <img
                                                 src={`data:${answer.contentType};base64,${answer.file}`}
                                                 alt="Answer File"
                                                 style={{
-                                                  maxWidth: '100%',
-                                                  maxHeight: '500px',
-                                                  objectFit: 'contain',
-                                                  borderRadius: '10px',
-                                                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
-                                                  border: '1px solid #ddd',
+                                                  maxWidth: '100%', maxHeight: '500px', objectFit: 'contain',
+                                                  borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
+                                                  border: '1px solid #ddd'
                                                 }}
                                               />
-                                            ) : // Check if file type is PDF
-                                            answer.contentType === 'application/pdf' ? (
+                                            ) : answer.contentType === 'application/pdf' ? (
                                               <embed
                                                 src={`data:${answer.contentType};base64,${answer.file}`}
                                                 type="application/pdf"
                                                 width="100%"
                                                 height="600px"
                                                 style={{
-                                                  borderRadius: '10px',
-                                                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
-                                                  border: '1px solid #ddd',
+                                                  borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
+                                                  border: '1px solid #ddd'
                                                 }}
                                               />
-                                            ) : // Check if file type is a document
-                                            answer.contentType === 'application/msword' ||
-                                              answer.contentType ===
-                                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-                                              answer.contentType === 'application/vnd.ms-excel' ||
-                                              answer.contentType ===
-                                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
-                                              answer.contentType === 'text/csv' ||
-                                              answer.contentType === 'application/rtf' ||
-                                              answer.contentType === 'text/plain' ? (
+                                            ) : (
                                               <iframe
                                                 src={`data:${answer.contentType};base64,${answer.file}`}
                                                 style={{
-                                                  width: '100%',
-                                                  height: '600px',
-
-                                                  borderRadius: '10px',
-                                                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
-                                                  border: '1px solid #ddd',
+                                                  width: '100%', height: '600px', borderRadius: '10px',
+                                                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)', border: '1px solid #ddd'
                                                 }}
                                                 title="Document Viewer"
                                               />
-                                            ) : (
-                                              <p style={{ color: '#e74c3c', fontSize: '16px' }}>
-                                                <p>{t('Unsupported file type')}</p>
-                                              </p>
                                             )
                                           ) : (
                                             <p style={{ color: '#e74c3c', fontSize: '16px' }}>
@@ -853,16 +809,10 @@ function QuestionsPageById() {
                                           )}
                                         </div>
                                       )}
-
-                                      {/* Handling correct/accepted answers */}
                                       {answer.accepted ? (
                                         <div
                                           onClick={() => handleUnacceptAnswer(answer.id)}
-                                          style={{
-                                            cursor: 'pointer',
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                          }}
+                                          style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}
                                         >
                                           <CorrectAnswerLabel>
                                             <IoIosCheckmarkCircleOutline />
@@ -875,8 +825,6 @@ function QuestionsPageById() {
                                           onClick={() => handleAcceptAnswer(answer.id)}
                                         />
                                       )}
-
-                                      {/* Moderator actions */}
                                       {isModerator && (
                                         <div style={{ marginTop: '10px' }}>
                                           <FontAwesomeIcon
@@ -887,21 +835,16 @@ function QuestionsPageById() {
                                         </div>
                                       )}
                                     </Cader>
-
-                                    {/* Voting for answers */}
                                     <span key={answer.id}>
                                       <FontAwesomeIcon
                                         icon={faThumbsUp}
                                         onClick={() => handleAnswerLike(answer.id)}
                                         style={{ cursor: 'pointer', color: 'black' }}
                                       />
-                                      <span style={{margin: '0 20px', minWidth: '20px', textAlign: 'center'}}>
+                                      <span style={{ margin: '0 20px', minWidth: '20px', textAlign: 'center' }}>
                                         {answer.votes.length
-                                          ? answer.votes
-                                              .map((vote) => vote.value)
-                                              .reduce((a, b) => a + b, 0)
+                                          ? answer.votes.map((vote) => vote.value).reduce((a, b) => a + b, 0)
                                           : 0}{' '}
-                                        {/* Somme des valeurs de vote */}
                                       </span>
                                       <FontAwesomeIcon
                                         icon={faThumbsDown}
@@ -909,8 +852,6 @@ function QuestionsPageById() {
                                         style={{ cursor: 'pointer', color: 'black' }}
                                       />
                                     </span>
-
-                                    {/* Reply form for each answer */}
                                     {replyToId === answer.id && (
                                       <form
                                         ref={replyFormRef}
@@ -933,16 +874,12 @@ function QuestionsPageById() {
                                         </button>
                                       </form>
                                     )}
-
-                                    {/* Displaying replies */}
                                     <div>
                                       {answer.responses.length > 0 && (
                                         <div style={{ marginLeft: '20px', marginTop: '20px' }}>
                                           <h5
                                             style={{
-                                              marginBottom: '15px',
-                                              fontSize: '18px',
-                                              color: '#333',
+                                              marginBottom: '15px', fontSize: '18px', color: '#333'
                                             }}
                                           >
                                             {t('Replies:')}
@@ -951,11 +888,8 @@ function QuestionsPageById() {
                                             <Comment
                                               key={response.id}
                                               style={{
-                                                display: 'flex',
-                                                alignItems: 'flex-start',
-                                                marginBottom: '15px',
-                                                paddingBottom: '15px',
-                                                borderBottom: '1px solid #ddd',
+                                                display: 'flex', alignItems: 'flex-start', marginBottom: '15px',
+                                                paddingBottom: '15px', borderBottom: '1px solid #ddd'
                                               }}
                                             >
                                               <UserAvatar
@@ -963,20 +897,15 @@ function QuestionsPageById() {
                                                 userId={response.userId}
                                                 alt={response.username}
                                                 style={{
-                                                  width: '30px',
-                                                  height: '30px',
-                                                  borderRadius: '50%',
-                                                  objectFit: 'cover',
-                                                  marginRight: '15px',
-                                                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                                                  width: '30px', height: '30px', borderRadius: '50%',
+                                                  objectFit: 'cover', marginRight: '15px',
+                                                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
                                                 }}
                                               />
                                               <div style={{ flex: 1 }}>
                                                 <span
                                                   style={{
-                                                    fontWeight: 'bold',
-                                                    color: '#555',
-                                                    marginLeft: '10px',
+                                                    fontWeight: 'bold', color: '#555', marginLeft: '10px'
                                                   }}
                                                 >
                                                   {response.username}
@@ -1010,8 +939,6 @@ function QuestionsPageById() {
                                 <Separator />
                               </React.Fragment>
                             ))}
-
-                          {/* Handling submission of new answers */}
                           {isAccepted ? (
                             <div>
                               <p>
@@ -1030,11 +957,8 @@ function QuestionsPageById() {
                                   cols="30"
                                   rows="3"
                                   style={{
-                                    width: '100%',
-                                    marginBottom: '10px',
-                                    paddingRight: '40px',
-                                    backgroundColor: '#fff',
-                                    border: '1px solid #ddd',
+                                    width: '100%', marginBottom: '10px', paddingRight: '40px',
+                                    backgroundColor: '#fff', border: '1px solid #ddd'
                                   }}
                                 />
                                 <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
@@ -1042,11 +966,8 @@ function QuestionsPageById() {
                                     type="button"
                                     onClick={handleAddLink}
                                     style={{
-                                      background: 'none',
-                                      border: 'none',
-                                      cursor: 'pointer',
-                                      fontSize: '24px',
-                                      pointerEvents: 'auto',
+                                      background: 'none', border: 'none', cursor: 'pointer',
+                                      fontSize: '24px', pointerEvents: 'auto'
                                     }}
                                   >
                                     <FaLink />
@@ -1060,17 +981,11 @@ function QuestionsPageById() {
                                   <label
                                     htmlFor="fileInput"
                                     style={{
-                                      background: 'none',
-                                      border: 'none',
-                                      cursor: 'pointer',
-                                      fontSize: '24px',
-                                      pointerEvents: 'auto',
+                                      background: 'none', border: 'none', cursor: 'pointer',
+                                      fontSize: '24px', pointerEvents: 'auto'
                                     }}
                                   >
-                                    <svg
-                                      viewBox="0 0 24 24"
-                                      style={{ width: '24px', height: '24px' }}
-                                    >
+                                    <svg viewBox="0 0 24 24" style={{ width: '24px', height: '24px' }}>
                                       <path d="M20,20H4V4H12L14,2H4C2.89,2 2,2.89 2,4V20C2,21.1 2.9,22 4,22H20C21.1,22 22,21.1 22,20V10H20V20M20,8V4H14L20,8Z" />
                                     </svg>
                                   </label>
@@ -1086,14 +1001,11 @@ function QuestionsPageById() {
                                   />
                                 </div>
                               )}
-
                               <button
                                 className="btn"
                                 style={{
-                                  marginRight: '20px',
-                                  marginTop: '20px',
-                                  backgroundColor: '#cf022b',
-                                  color: '#fff',
+                                  marginRight: '20px', marginTop: '20px',
+                                  backgroundColor: '#cf022b', color: '#fff'
                                 }}
                                 type="submit"
                               >
@@ -1107,11 +1019,12 @@ function QuestionsPageById() {
                   </div>
                 </div>
               </div>
-            </div> 
+            </div>
           </div>
         )}
       </Container>
-    </>
+    </div>
+  </>
   );
 }
 

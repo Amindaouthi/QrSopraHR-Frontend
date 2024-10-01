@@ -16,7 +16,7 @@ const ListTags = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/tags/getAll'); // Replace with your API endpoint
+      const response = await axios.get('http://localhost:8082/api/tags/getAll'); // Replace with your API endpoint
       setTags(response.data);
       setLoading(false);
     } catch (error) {

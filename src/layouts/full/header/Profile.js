@@ -76,7 +76,7 @@ const {t} = useTranslation();
         const matricul = userData.id;
         if (matricul) {
           axios
-            .get(`http://localhost:8080/api/user/${matricul}`)
+            .get(`http://localhost:8082/api/user/${matricul}`)
             .then((response) => {
               const base64Image = response.data?.imageBase64;
               if (base64Image) {

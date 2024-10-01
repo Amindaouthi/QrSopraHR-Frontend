@@ -11,7 +11,7 @@ const UserAvatar = ({ userId }) => {
     const fetchUserById = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`http://localhost:8080/api/user/${userId}`, {
+        const response = await axios.get(`http://localhost:8082/api/user/${userId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
