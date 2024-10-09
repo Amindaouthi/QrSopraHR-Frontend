@@ -1,5 +1,4 @@
-# Étape de construction
-FROM node:20.10.0 AS build-stage
+FROM node:20.15.0
 
 # Définir le répertoire de travail dans le conteneur
 WORKDIR /app

@@ -75,7 +75,7 @@ const QuestionOnTags = () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`http://localhost:8082/api/questions/byTag/${tag}`, {
+        const response = await axios.get(`http://localhost:8083/api/questions/byTag/${tag}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }

@@ -21,7 +21,7 @@ const Stat = () => {
     
     useEffect(() => {
         // Fetch data from API
-        axios.get('http://localhost:8082/api/questions')
+        axios.get('http://localhost:8083/api/questions')
             .then(response => {
                 const data = response.data;
                 console.log(data);

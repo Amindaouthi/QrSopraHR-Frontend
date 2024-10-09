@@ -245,7 +245,7 @@ const QuestionsPage = () => {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:8082/api/questions/${questionId}`);
+        await axios.delete(`http://localhost:8083/api/questions/${questionId}`);
         fetchAllQuestions();
         Swal.fire('Deleted!', 'the question has been deleted.', 'success');
       } catch (error) {
@@ -273,7 +273,7 @@ const QuestionsPage = () => {
       
       const favoriteId = question.favorites[0].id; 
       const response = await axios.delete(
-        `http://localhost:8082/api/favorites/${favoriteId}`,
+        `http://localhost:8083/api/favorites/${favoriteId}`,
         {
           headers: {
             Authorization: `Bearer ${votreToken}`,
@@ -290,7 +290,7 @@ const QuestionsPage = () => {
     } else {
       
       const response = await axios.post(
-        `http://localhost:8082/api/favorites/markQuestionAsFavorite/${questionId}`,
+        `http://localhost:8083/api/favorites/markQuestionAsFavorite/${questionId}`,
         {},
         {
           headers: {
@@ -318,7 +318,7 @@ const QuestionsPage = () => {
     
   const fetchQuestionData = async (questionId) => {
     try {
-      const response = await fetch(`http://localhost:8082/api/questions/${questionId}`);
+      const response = await fetch(`http://localhost:8083/api/questions/${questionId}`);
       const data = await response.json();
       // Update question data in the state
       setQuestionData((prevData) =>
@@ -331,7 +331,7 @@ const QuestionsPage = () => {
 
   const fetchAllQuestions = async () => {
     try {
-      const response = await fetch('http://localhost:8082/api/questions/all', {
+      const response = await fetch('http://localhost:8083/api/questions/all', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -374,7 +374,7 @@ const QuestionsPage = () => {
 
   const handleAllQuestionsClick = async () => {
     try {
-      const response = await fetch('http://localhost:8082/api/questions/all', {
+      const response = await fetch('http://localhost:8083/api/questions/all', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -404,7 +404,7 @@ const QuestionsPage = () => {
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await axios.get('http://localhost:8082/api/tags/getAll', {
+        const response = await axios.get('http://localhost:8083/api/tags/getAll', {
           headers: {
             Authorization: `Bearer ${votreToken}`,
           },
@@ -417,7 +417,7 @@ const QuestionsPage = () => {
 
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://localhost:8082/api/users', {
+        const response = await axios.get('http://localhost:8083/api/users', {
           headers: {
             Authorization: `Bearer ${votreToken}`,
           },
@@ -451,7 +451,7 @@ const QuestionsPage = () => {
     };
 
     try {
-      const response = await axios.post('http://localhost:8082/api/questions/all', requestData, {
+      const response = await axios.post('http://localhost:8083/api/questions/all', requestData, {
         headers: {
           Authorization: `Bearer ${votreToken}`,
         },
@@ -484,7 +484,7 @@ const QuestionsPage = () => {
  
       if (isQuestionFavorite) {
         const favoriteId = question.favorites[0].id;
-        const response = await axios.delete(`http://localhost:8082/api/favorites/${favoriteId}`, {
+        const response = await axios.delete(`http://localhost:8083/api/favorites/${favoriteId}`, {
           headers: {
             Authorization: `Bearer ${votreToken}`,
           },
@@ -498,7 +498,7 @@ const QuestionsPage = () => {
         }
       } else {
         const response = await axios.post(
-          `http://localhost:8082/api/favorites/markQuestionAsFavorite/${questionId}`,
+          `http://localhost:8083/api/favorites/markQuestionAsFavorite/${questionId}`,
           {},
           {
             headers: {

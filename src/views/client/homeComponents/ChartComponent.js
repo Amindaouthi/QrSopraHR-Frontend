@@ -8,13 +8,6 @@ import { useLocation } from 'react-router-dom';
 import { SlBadge } from 'react-icons/sl'; // Import SlBadge icon
 import { useTranslation } from 'react-i18next';
 
-
-const CustomLine = styled.div`
-  width: 100%; /* Full width */
-  height: 2px; /* Line thickness */
-  background-color: #ccc; /* Line color */
-  margin: 20px 0; /* Spacing around the line */
-`;
 // Styled components
 const PageContainer = styled.div`
   display: flex;
@@ -172,18 +165,19 @@ const ChartComponent = () => {
   const [userImage, setUserImage] = useState('');
   const { t } = useTranslation();
   const [userSince, setUserSince] = useState('No questions created yet'); // Default value for "User since"
+
   useEffect(() => {
     if (id) {
       const fetchData = async () => {
         try {
           // Fetch user info
-          const userResponse = await axios.get(`http://localhost:8082/api/user/${id}`);
+          const userResponse = await axios.get(`http://localhost:8083/api/user/${id}`);
           setUserName(userResponse.data.username);
           setUserPoints(userResponse.data.reputation.score);
           setUserImage(userResponse.data.imageBase64 || '');
   
           // Fetch questions data from the new endpoint
-          const questionsResponse = await axios.get('http://localhost:8082/api/questions/by-user-and-date', {
+          const questionsResponse = await axios.get('http://localhost:8083/api/questions/by-user-and-date', {
             params: {
               userId: id,
               startDate: '2024-01-01',
@@ -192,6 +186,16 @@ const ChartComponent = () => {
           });
   
           const data = questionsResponse.data;
+          
+          if (data.length > 0) {
+            // Find the earliest question creation date
+            const earliestQuestionDate = data.reduce((earliest, question) => {
+              const questionDate = new Date(question.createdAt);
+              return questionDate < earliest ? questionDate : earliest;
+            }, new Date());
+            
+            setUserSince(earliestQuestionDate);
+          }
   
           const questionsCounts = Array(12).fill(0);
           const answersCounts = Array(12).fill(0);
@@ -217,10 +221,10 @@ const ChartComponent = () => {
         } catch (error) {
           console.error('Error fetching user data or questions:', error);
         }
-  
+        
         // Fetch answers data from the new endpoint
         try {
-          const answersResponse = await axios.get('http://localhost:8082/api/questions/byuseranddate', {
+          const answersResponse = await axios.get('http://localhost:8083/api/questions/byuseranddate', {
             params: {
               userId: id,
               startDate: '2024-01-01',
@@ -251,14 +255,15 @@ const ChartComponent = () => {
     responses: '#dc3545', // Red
   };
 
-  const formatDate = (dateString) => {
-    if (dateString === 'No questions created yet') {
-      return dateString;
-    }
-    const date = new Date(dateString);
-    const options = { year: 'numeric', month: 'long' };
-    return date.toLocaleDateString('en-US', options);
-  };
+ const formatDate = (dateString) => {
+  if (!dateString || dateString === 'No questions created yet') {
+    return 'No questions created yet';
+  }
+  const date = new Date(dateString);
+  const options = { year: 'numeric', month: 'long' };
+  return date.toLocaleDateString('en-US', options);
+};
+
 
   // Determine badge state based on points
   const getBadgeState = (points) => {
@@ -275,254 +280,282 @@ const ChartComponent = () => {
     <PageContainer>
       <NewNavbar />
       <ContentContainer>
-  <Sidebar style={{ height: '100%' }} />
-  <MainContent>
-    <ProfileSection>
-      <ProfileIcon>
-        <img
-          src={
-            userImage
-              ? `data:image/jpeg;base64,${userImage}`
-              : 'https://bootdey.com/img/Content/avatar/avatar7.png'
-          }
-          alt="User Profile"
-        />
-      </ProfileIcon>
-      <div>
-        <UserInfo>
-          <UserInfoTitle>{userName}</UserInfoTitle>
-          <UserInfoDetail>
-            {t('User since:')} {formatDate('2024-01-01')}
-          </UserInfoDetail>
-          <UserInfoDetail>Points: {userPoints}</UserInfoDetail>
-        </UserInfo>
-        <BadgeSection>
-  {badges.gold && <Badge as={SlBadge} color="#ffd700" active />}
-  {!badges.gold && badges.silver && <Badge as={SlBadge} color="#c0c0c0" active />}
-  {!badges.gold && !badges.silver && badges.bronze && <Badge as={SlBadge} color="#cd7f32" active />}
-</BadgeSection>
+        <Sidebar style={{ height: '100%' }} />
+        <MainContent>
+          <ProfileSection>
+            <ProfileIcon>
+              <img
+                src={
+                  userImage
+                    ? `data:image/jpeg;base64,${userImage}`
+                    : 'https://bootdey.com/img/Content/avatar/avatar7.png'
+                }
+                alt="User Profile"
+              />
+            </ProfileIcon>
+            <div>
+              <UserInfo>
+                <UserInfoTitle>{userName}</UserInfoTitle>
+                <UserInfoDetail>
+  {t('User since:')} {formatDate(userSince)}
+</UserInfoDetail>
 
-      </div>
-    </ProfileSection>
-
-    <ChartsContainer>
-      <H2>
-        {userName} {t('Stats')}
-        </H2>
-        <CustomLine />
-             <TopChartsRow>
-        <ChartWrapper>
-          <ChartTitle>{t('Total Questions by Month')}</ChartTitle>
-          <ChartSubtitle>{t('Monthly distribution of questions')}</ChartSubtitle>
-          <ApexCharts
-            options={{
-              chart: {
-                type: 'line',
-                toolbar: { show: false },
-              },
-              xaxis: {
-                categories: Array.from({ length: 12 }, (_, i) =>
-                  new Date(0, i).toLocaleString('en', { month: 'short' })
-                ),
-              },
-              yaxis: {
-                title: {
-                  style: {
-                    fontSize: '14px',
-                    color: '#333',
-                  },
-                },
-              },
-              colors: [CHART_COLORS.questions],
-              dataLabels: {
-                enabled: true,
-                formatter: (val) => (val === 0 ? '' : val), // Hide labels when value is 0
-                style: {
-                  fontSize: '15px',
-                  colors: ['#fff'],
-                },
-                dropShadow: {
-                  enabled: true,
-                  top: 1,
-                  left: 1,
-                  color: '#000',
-                  opacity: 0.5,
-                  blur: 1,
-                },
-              },
-              tooltip: {
-                theme: 'dark',
-                style: {
-                  fontSize: '12px',
-                },
-                marker: {
-                  show: true,
-                },
-              },
-              stroke: {
-                curve: 'smooth', // Smooth line curve
-                width: 3, // Increased line width for better visibility
-              },
-              markers: {
-                size: 5, // Marker size
-                colors: ['#fff'], // Marker fill color
-                strokeColors: [CHART_COLORS.questions], // Marker stroke color
-                strokeWidth: 2, // Marker stroke width
-                hover: {
-                  size: 6, // Marker size on hover
-                },
-              },
-              responsive: [{ breakpoint: 480, options: { legend: { position: 'bottom' } } }],
-            }}
-            series={[{ name: 'Questions', data: questionsData }]}
-            type="line"
-            height={300}
-          />
-        </ChartWrapper>
-
-        <ChartWrapper>
-          <ChartTitle>{t('Total Answers by Month')}</ChartTitle>
-          <ChartSubtitle>{t('Monthly distribution of answers')}</ChartSubtitle>
-          <ApexCharts
-            options={{
-              chart: {
-                type: 'line',
-                toolbar: { show: false },
-              },
-              xaxis: {
-                categories: Array.from({ length: 12 }, (_, i) =>
-                  new Date(0, i).toLocaleString('en', { month: 'short' })
-                ),
-              },
-              yaxis: {
-                title: {
-                  style: {
-                    fontSize: '14px',
-                    color: '#333',
-                  },
-                },
-              },
-              colors: [CHART_COLORS.answers],
-              dataLabels: {
-                enabled: true,
-                formatter: (val) => (val === 0 ? '' : val), // Hide labels when value is 0
-                style: {
-                  fontSize: '15px',
-                  colors: ['#fff'],
-                },
-                dropShadow: {
-                  enabled: true,
-                  top: 1,
-                  left: 1,
-                  color: '#000',
-                  opacity: 0.5,
-                  blur: 1,
-                },
-              },
-              tooltip: {
-                theme: 'dark',
-                style: {
-                  fontSize: '12px',
-                },
-                marker: {
-                  show: true,
-                },
-              },
-              stroke: {
-                curve: 'smooth',
-                width: 4,
-              },
-              markers: {
-                size: 5,
-                colors: ['#fff'],
-                strokeColors: [CHART_COLORS.answers],
-                strokeWidth: 2,
-                hover: {
-                  size: 6,
-                },
-              },
-              responsive: [{ breakpoint: 480, options: { legend: { position: 'bottom' } } }],
-            }}
-            series={[{ name: 'Answers', data: answersData }]}
-            type="line"
-            height={300}
-          />
-        </ChartWrapper>
-      </TopChartsRow>
-
-      <ChartWrapper>
-        <ChartTitle>{t('Total Responses by Month')}</ChartTitle>
-        <ChartSubtitle>{t('Monthly distribution of responses')}</ChartSubtitle>
-        <ApexCharts
-          options={{
-            chart: {
-              type: 'line',
-              toolbar: { show: false },
+                <UserInfoDetail>Points: {userPoints}</UserInfoDetail>
+              </UserInfo>
+              <BadgeSection>
+                {badges.gold && <Badge as={SlBadge} color="#ffd700" active />}
+                {badges.silver && <Badge as={SlBadge} color="#c0c0c0" active />}
+                {badges.bronze && <Badge as={SlBadge} color="#cd7f32" active />}
+              </BadgeSection>
+            </div>
+          </ProfileSection>
+          <ChartsContainer>
+  <H2>Stats Overview</H2>
+  {/* Top Charts Row */}
+  <TopChartsRow>
+    <ChartWrapper>
+      <ChartTitle>{t('Questions')}</ChartTitle>
+      <ApexCharts
+        type="line"
+        height={400}
+        series={[
+          {
+            name: 'Questions',
+            data: questionsData,
+          },
+        ]}
+        options={{
+          chart: {
+            type: 'line',
+            height: 400,
+            toolbar: {
+              show: false,
             },
-            xaxis: {
-              categories: Array.from({ length: 12 }, (_, i) =>
-                new Date(0, i).toLocaleString('en', { month: 'short' })
-              ),
-            },
-            yaxis: {
-        
-              title: {
-                style: {
-                  fontSize: '14px',
-                  color: '#333',
-                },
-              },
-            },
-            colors: [CHART_COLORS.responses],
-            dataLabels: {
-              enabled: true,
-              formatter: (val) => (val === 0 ? '' : val), // Hide labels when value is 0
+          },
+          stroke: {
+            curve: 'smooth',
+            width: 3,
+          },
+          dataLabels: {
+            enabled: false,
+          },
+          xaxis: {
+            categories: [
+              'January',
+              'February',
+              'March',
+              'April',
+              'May',
+              'June',
+              'July',
+              'August',
+              'September',
+              'October',
+              'November',
+              'December',
+            ],
+            labels: {
               style: {
-                fontSize: '15px',
-                colors: ['#fff'],
-              },
-              dropShadow: {
-                enabled: true,
-                top: 1,
-                left: 1,
-                color: '#000',
-                opacity: 0.5,
-                blur: 1,
-              },
-            },
-            tooltip: {
-              theme: 'dark',
-              style: {
+                colors: '#333',
                 fontSize: '12px',
-              },
-              marker: {
-                show: true,
+                fontWeight: 'bold',
               },
             },
-            stroke: {
-              curve: 'smooth',
-              width: 3,
-            },
-            markers: {
-              size: 5,
-              colors: ['#fff'],
-              strokeColors: [CHART_COLORS.responses],
-              strokeWidth: 2,
-              hover: {
-                size: 6,
+          },
+          yaxis: {
+            labels: {
+              style: {
+                colors: '#333',
+                fontSize: '12px',
+                fontWeight: 'bold',
               },
             },
-            responsive: [{ breakpoint: 480, options: { legend: { position: 'bottom' } } }],
-          }}
-          series={[{ name: 'Responses', data: responsesData }]}
-          type="line"
-          height={300}
-        />
-      </ChartWrapper>
-    </ChartsContainer>
-  </MainContent>
-</ContentContainer>
+          },
+          grid: {
+            borderColor: '#e7e7e7',
+            strokeDashArray: 4,
+          },
+          colors: [CHART_COLORS.questions],
+          markers: {
+            size: 5,
+            colors: ['#fff'],
+            strokeColors: [CHART_COLORS.questions],
+          },
+          tooltip: {
+            theme: 'dark',
+            marker: {
+              show: true,
+            },
+          },
+        }}
+      />
+    </ChartWrapper>
 
+    <ChartWrapper>
+      <ChartTitle>{t('Answers')}</ChartTitle>
+      <ApexCharts
+        type="line"
+        height={400}
+        series={[
+          {
+            name: 'Answers',
+            data: answersData,
+          },
+        ]}
+        options={{
+          chart: {
+            type: 'line',
+            height: 400,
+            toolbar: {
+              show: false,
+            },
+          },
+          stroke: {
+            curve: 'smooth',
+            width: 3,
+          },
+          dataLabels: {
+            enabled: false,
+          },
+          xaxis: {
+            categories: [
+              'January',
+              'February',
+              'March',
+              'April',
+              'May',
+              'June',
+              'July',
+              'August',
+              'September',
+              'October',
+              'November',
+              'December',
+            ],
+            labels: {
+              style: {
+                colors: '#333',
+                fontSize: '12px',
+                fontWeight: 'bold',
+              },
+            },
+          },
+          yaxis: {
+            labels: {
+              style: {
+                colors: '#333',
+                fontSize: '12px',
+                fontWeight: 'bold',
+              },
+            },
+          },
+          grid: {
+            borderColor: '#e7e7e7',
+            strokeDashArray: 4,
+          },
+          colors: [CHART_COLORS.answers],
+          markers: {
+            size: 5,
+            colors: ['#fff'],
+            strokeColors: [CHART_COLORS.answers],
+          },
+          tooltip: {
+            theme: 'dark',
+            marker: {
+              show: true,
+            },
+          },
+        }}
+      />
+    </ChartWrapper>
+  </TopChartsRow>
+
+  {/* Single Chart on the Bottom */}
+  <ChartWrapper>
+    <ChartTitle>{t('Responses')}</ChartTitle>
+    <ApexCharts
+      type="line"
+      height={400}
+      series={[
+        {
+          name: 'Responses',
+          data: responsesData,
+        },
+      ]}
+      options={{
+        chart: {
+          type: 'line',
+          height: 400,
+          toolbar: {
+            show: false,
+          },
+        },
+        stroke: {
+          curve: 'smooth',
+          width: 3,
+        },
+        dataLabels: {
+          enabled: false,
+        },
+        xaxis: {
+          categories: [
+            'January',
+            'February',
+            'March',
+            'April',
+            'May',
+            'June',
+            'July',
+            'August',
+            'September',
+            'October',
+            'November',
+            'December',
+          ],
+          labels: {
+            style: {
+              colors: '#333',
+              fontSize: '12px',
+              fontWeight: 'bold',
+            },
+          },
+        },
+        yaxis: {
+          labels: {
+            style: {
+              colors: '#333',
+              fontSize: '12px',
+              fontWeight: 'bold',
+            },
+          },
+        },
+        grid: {
+          borderColor: '#e7e7e7',
+          strokeDashArray: 4,
+        },
+        colors: [CHART_COLORS.responses],
+        markers: {
+          size: 5,
+          colors: ['#fff'],
+          strokeColors: [CHART_COLORS.responses],
+        },
+        tooltip: {
+          theme: 'dark',
+          marker: {
+            show: true,
+          },
+        },
+      }}
+    />
+  </ChartWrapper>
+
+  <HorizontalLine />
+</ChartsContainer>
+
+
+
+        </MainContent>
+      </ContentContainer>
     </PageContainer>
   );
   

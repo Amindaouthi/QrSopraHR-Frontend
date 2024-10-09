@@ -50,7 +50,7 @@ function ProfilePage() {
     const userId = JSON.parse(localStorage.getItem('user'))?.id;
     if (userId) {
       axios
-        .get(`http://localhost:8082/api/user/${userId}`)
+        .get(`http://localhost:8083/api/user/${userId}`)
         .then((response) => {
           const { prenom, nom, email, username, imageBase64 } = response.data;
           setFormData((prev) => ({
@@ -138,7 +138,7 @@ function ProfilePage() {
         formDataToSend.append('image', formData.image);
       }
 
-      await axios.put(`http://localhost:8082/api/user/${userId}`, formDataToSend, {
+      await axios.put(`http://localhost:8083/api/user/${userId}`, formDataToSend, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'multipart/form-data',

@@ -201,7 +201,7 @@ function QuestionsPageById() {
       });
 
       await axios.post(
-        `http://localhost:8082/api/questions/${questionId}/answers`,
+        `http://localhost:8083/api/questions/${questionId}/answers`,
         formData,
 
         {
@@ -234,7 +234,7 @@ function QuestionsPageById() {
   const fetchQuestionById = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:8082/api/questions/${questionId}`, {
+      const response = await axios.get(`http://localhost:8083/api/questions/${questionId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -269,7 +269,7 @@ function QuestionsPageById() {
   useEffect(() => {
     const incrementView = async () => {
       try {
-        await axios.put(`http://localhost:8082/api/questions/${questionId}/increment-view`);
+        await axios.put(`http://localhost:8083/api/questions/${questionId}/increment-view`);
         console.log('View count incremented successfully.');
       } catch (error) {
         console.error('Error incrementing view count:', error);
@@ -297,7 +297,7 @@ function QuestionsPageById() {
       }
 
       const response = await axios.post(
-        `http://localhost:8082/api/questions/${questionId}/answers/${parentAnswerId}/responses`,
+        `http://localhost:8083/api/questions/${questionId}/answers/${parentAnswerId}/responses`,
         { content: replyContent },
         {
           headers: {
@@ -406,7 +406,7 @@ function QuestionsPageById() {
     const fetchAnswers = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8082/api/questions/${questionId}/answers`,
+          `http://localhost:8083/api/questions/${questionId}/answers`,
         );
         setAnswers(response.data);
       } catch (error) {
@@ -436,7 +436,7 @@ function QuestionsPageById() {
 
       try {
         const response = await axios.put(
-          `http://localhost:8082/api/questions/${answerId}/accept`,
+          `http://localhost:8083/api/questions/${answerId}/accept`,
           {},
           {
             headers: {
@@ -483,7 +483,7 @@ function QuestionsPageById() {
 
       try {
         const response = await axios.put(
-          `http://localhost:8082/api/questions/${answerId}/unaccept`,
+          `http://localhost:8083/api/questions/${answerId}/unaccept`,
           {},
           {
             headers: {
@@ -543,7 +543,7 @@ function QuestionsPageById() {
     if (result.isConfirmed) {
       try {
         await axios.delete(
-          `http://localhost:8082/api/questions/${questionId}/answers/${answerId}`,
+          `http://localhost:8083/api/questions/${questionId}/answers/${answerId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`, // Include the token in the Authorization header
@@ -573,7 +573,7 @@ function QuestionsPageById() {
     if (result.isConfirmed) {
       try {
         await axios.delete(
-          `http://localhost:8082/api/questions/${questionId}/answers/${parentAnswerId}/responses/${responseId}`,
+          `http://localhost:8083/api/questions/${questionId}/answers/${parentAnswerId}/responses/${responseId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

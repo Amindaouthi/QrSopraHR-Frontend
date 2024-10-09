@@ -27,7 +27,7 @@ const AskPage = () => {
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await axios.get('http://localhost:8082/api/tags/getAll', {
+        const response = await axios.get('http://localhost:8083/api/tags/getAll', {
           headers: {
             Authorization: `Bearer ${votreToken}`,
           },
@@ -78,7 +78,7 @@ const AskPage = () => {
     if (isEditMode) {
       // Update question
       try {
-        const response = await axios.put(`http://localhost:8082/api/questions/${question.id}`, formData, { headers });
+        const response = await axios.put(`http://localhost:8083/api/questions/${question.id}`, formData, { headers });
  
         if (response.status === 200) {
           await Swal.fire({
@@ -100,7 +100,7 @@ const AskPage = () => {
     } else {
       
       try {
-        const response = await axios.post('http://localhost:8082/api/questions/create', formData, {
+        const response = await axios.post('http://localhost:8083/api/questions/create', formData, {
           headers: headers, // Pass the headers object to Axios
         });
         if (response.status === 200) {

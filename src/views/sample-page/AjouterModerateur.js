@@ -42,7 +42,7 @@ const AjouterModerateur = () => {
         }
 
         try {
-            const response = await axios.post('http://localhost:8082/api/auth/signup', formData);
+            const response = await axios.post('http://localhost:8083/api/auth/signup', formData);
             console.log(response.data);
             Swal.fire({
                 icon: 'success',

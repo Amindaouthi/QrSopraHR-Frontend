@@ -181,7 +181,7 @@ const Customers = () => {
   useEffect(() => {
     // Fetch users from the backend
     axios
-      .get('http://localhost:8082/api/users', {
+      .get('http://localhost:8083/api/users', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -207,7 +207,7 @@ const Customers = () => {
       });
 
     // Set up WebSocket connection
-    const socket = new SockJS('http://localhost:8082/chat-websocket');
+    const socket = new SockJS('http://localhost:8083/chat-websocket');
     const client = new Client();
 
     client.configure({
@@ -275,7 +275,7 @@ const Customers = () => {
 
     // Retrieve historical messages between the current user and the selected user
     axios
-      .get(`http://localhost:8082/messages/${senderId}/${id}`, {
+      .get(`http://localhost:8083/messages/${senderId}/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`, // Include the token in the headers
         },
