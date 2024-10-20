@@ -107,6 +107,7 @@ const AskPage = () => {
           await Swal.fire({
             icon: 'success',
             title: 'Success',
+            position:'center',
             text: 'Question created successfully!',
           });
  

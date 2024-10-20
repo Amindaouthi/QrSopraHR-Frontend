@@ -1,4 +1,5 @@
-FROM node:20.15.0
+# Étape de construction
+FROM node:20.10.0 AS build-stage
 
 # Définir le répertoire de travail dans le conteneur
 WORKDIR /app
@@ -14,6 +15,7 @@ COPY . .
 
 # Construire l'application pour la production
 RUN npm run build
+
 
 # Étape de production
 FROM nginx:alpine

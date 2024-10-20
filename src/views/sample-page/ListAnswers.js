@@ -138,7 +138,7 @@ const ListAnswers = () => {
                 </Typography>
               </TableCell>
               <TableCell align="right">
-                <Typography variant="subtitle2" fontWeight={600} style={{ marginLeft: "87px" }}>
+                <Typography variant="subtitle2" fontWeight={600} style={{ marginRight: "80px" }}>
                   Supprimer
                 </Typography>
               </TableCell>
